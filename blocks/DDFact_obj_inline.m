@@ -4,8 +4,8 @@ F=obj.F;
 Fsquare = obj.Fsquare;
 A_data=obj.A;
 b_data=obj.b;
-
-[fval,dx,info] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
+info = struct;
+[fval,dx,~] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
 % convert the sign back
 dx=-dx;
 fval=-fval;

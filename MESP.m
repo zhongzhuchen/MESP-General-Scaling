@@ -106,16 +106,16 @@ classdef MESP
     %% methods for the complementaty factorization bound
     methods
         function [fval,dx,info] = DDFact_comp_obj(obj,x,s,Gamma)
-        % This function calculate the objective value, gradient, and info of comp DDFact for given data
+        % calling knitro to solve the DDFact problem
         %{
         Input:
-        x       - current point for the DDFact problem
-        s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
+        s       - e'x=s
+        x0      - initial point
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C*Diag(Gamma)
 
         Output:
-        fval    - objective value of DDFact at current point x
-        dx      - the gradient of the obejctive function of DDFact at x
+        fval    - optimal value
+        x       - optimal solution
         info    - struct containing necesssary information
         %}
         DDFact_comp_obj_inline;
@@ -140,8 +140,7 @@ classdef MESP
         end
 
         function [optGamma,info]=BFGS_DDFact_comp_Gamma(obj,s,GammaInit)
-        % BFGS method for optimizaing symmetric diagonal scaling parameter
-        % of DDFact objective function (factorization bound)
+        % BFGS method for optimizing general scaling vectore
         BFGS_DDFact_comp_Gamma_inline;
         end
     end

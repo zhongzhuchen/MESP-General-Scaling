@@ -30,7 +30,6 @@ Gamma=GammaInit;
 
 difgap=1;
 k=1;
-
 c1=1e-4;
 c2=0.9;
 
@@ -164,7 +163,6 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-% [bound1,~,~]= obj.Knitro_DDFact_comp(x0,s,ones(n,1));
 [bound1,~,~] = Knitro_DDFact_comp_light(x0,C,s,F_comp,Fsquare_comp,ldetC,A_data,b_data,ones(n,1));
 if optbound>bound1
     optbound=bound1;
