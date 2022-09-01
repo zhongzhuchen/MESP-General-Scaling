@@ -9,35 +9,15 @@ Fsquare=obj.Fsquare;
 info=struct;
 
 %% calling knitro to solve the DDFact relaxation problem
-obj_fn =  @(x) DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
-lb=zeros(n,1);
-ub=ones(n,1);
-Aeq=ones(1,n);
-beq=s;
-A=A_data;
-b=b_data;
-
-if sum(abs(Aeq*x0-beq))>1e-10
-    error('The initial point x0 is not feasible.')
-end
-
-options = knitro_options('algorithm', 0, 'convex', 1, 'derivcheck', 0, 'outlev', 0 , 'gradopt', 1, ...
-                         'hessopt', 2, 'maxit', 1000, 'xtol', 1e-15, ...
-                         'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
-                         'bar_maxcrossit', 10);
-TStart=tic;
-tStart=cputime;
-[x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A,b,Aeq,beq,lb,ub,[],[],options);  
-time=toc(TStart);
-tEnd=cputime-tStart;
+[knitro_fval,x,ininfo] = Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma); 
 
 %% assign values to info
 % record important information
-info.exitflag=exitflag;
+info.exitflag=ininfo.exitflag;
 info.x=x; % optimal solution
 [fval,dx,finalinfo] = obj.DDFact_obj(x,s,Gamma);
 info.dx=dx;
-info.knitro_fval = -knitro_fval;
+info.knitro_fval = knitro_fval;
 info.fval=fval;
 info.continuous_dualgap=finalinfo.dualgap;
 info.dualbound=finalinfo.dualbound;
@@ -45,16 +25,16 @@ info.dual_upsilon=finalinfo.dual_upsilon;
 info.dual_nu=finalinfo.dual_nu;
 info.dual_pi=finalinfo.dual_pi;
 info.dual_tau=finalinfo.dual_tau;
-info.ub_lambda=lambda.upper;
-info.lb_lambda=lambda.lower;
+info.ub_lambda=ininfo.lambda.upper;
+info.lb_lambda=ininfo.lambda.lower;
 
-info.time=time;
-info.cputime=tEnd;
-info.iterations=output.iterations;
-info.funcCount=output.funcCount;
-info.firstorderopt=output.firstorderopt;
-info.constrviolation=output.constrviolation;
-info.algorithm=output.algorithm;
+info.time=ininfo.time;
+info.cputime=ininfo.cputime;
+info.iterations=ininfo.output.iterations;
+info.funcCount=ininfo.output.funcCount;
+info.firstorderopt=ininfo.output.firstorderopt;
+info.constrviolation=ininfo.output.constrviolation;
+info.algorithm=ininfo.output.algorithm;
 
 %% fixing variables by the fixing logic in the factorization paper by Chen etal.
 info.fixnum=0;

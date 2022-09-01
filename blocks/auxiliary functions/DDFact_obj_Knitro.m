@@ -1,7 +1,6 @@
 function [fval,dx,info] = DDFact_obj_Knitro(x,s,F,Fsquare,Gamma)
 % light version DDFact_obj method of MESP by eliminating all unnessary
 % calculations for saving time
-
 % scale F with Gamma
 n=length(x);
 F=diag(sqrt(Gamma))*F;
@@ -34,6 +33,18 @@ end
 % construct the eigenvalue for the feasible solution to the dual problem, i.e., DFact
 eigDual=zeros(d,1);
 
+% for i=1:d
+%     if(D(i)>mid_val)
+%         eigDual(i)=1/D(i);
+%     else
+%         if mid_val>0
+%             eigDual(i)=1/mid_val;
+%         else
+%             eigDual(i)=1/sort_D(k);
+%         end
+%     end
+% end
+
 % vectorized code of the above commented code
 ind1=sort_idx(1:k);
 non_ind1= setdiff(1:d, ind1);
@@ -45,6 +56,9 @@ else
 end
 
 %% calculate the gradient dx
+% dX=U*diag(eigDual)*U';
+% dx=diag(F*dX*F');
+
 % dX=U*diag(eigDual)*U';
 % dx=diag(F*dX*F');
 
