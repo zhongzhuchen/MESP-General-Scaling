@@ -106,7 +106,25 @@ classdef MESP
     %% methods for the complementaty factorization bound
     methods
         function [fval,dx,info] = DDFact_comp_obj(obj,x,s,Gamma)
-        % calling knitro to solve the DDFact problem
+        % evaluate the objective value, object gradient, and info of comp DDFact at
+        % given point x
+        %{
+        Input:
+        x       - given point
+        s       - e'x = s
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C*Diag(Gamma)
+
+        Output:
+        fval    - objective value at x
+        dx      - objective gradient at x
+        info    - struct containing necesssary information
+        %}
+        DDFact_comp_obj_inline;
+        end
+        
+
+        function [fval,x,info] = Knitro_DDFact_comp(obj,x0,s,Gamma)
+        % calling knitro to solve the comp DDFact problem
         %{
         Input:
         s       - e'x=s
@@ -116,24 +134,6 @@ classdef MESP
         Output:
         fval    - optimal value
         x       - optimal solution
-        info    - struct containing necesssary information
-        %}
-        DDFact_comp_obj_inline;
-        end
-        
-
-        function [fval,x,info] = Knitro_DDFact_comp(obj,x0,s,Gamma)
-        % calling knitro to solve the complementary DDFact problem
-        %{
-        Input:
-        s       - the size of subset we want to choose, also equals to the
-                  summation of all elements of x0
-        x0      - initial point
-        Gamma   - diagonal scaling paramter newC = Diag(Gamma)*C*Diag(Gamma)
-
-        Output:
-        fval    - objective value of DDFact at optimal solution x
-        x       - optimal solution x
         info    - struct containing necesssary information
         %}
         Knitro_DDFact_comp_inline;
@@ -149,35 +149,33 @@ classdef MESP
     %% methods for the linx bound with row scaling
     methods
         function [fval,dx,info] = Linx_obj(obj,x,s,Gamma)
-        % This function calculate the objective value and gradient of the objective function of linx
+         % evaluate the objective value, object gradient, and info of Linx at
+        % given point x
         %{
-        Input: 
-        x       - current point for linx bound
-        s       - the size of subset we want to choose, also equals to the summation of all elements of x
-        Gamma   - row diagonal scaling parameter
-        
+        Input:
+        x       - given point
+        s       - e'x = s
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C*Diag(Gamma)
+
         Output:
-        fval    - the linx bound at current point x
-        dx      - the gradient of obejctive function of Linx at x
+        fval    - objective value at x
+        dx      - objective gradient at x
         info    - struct containing necesssary information
         %}
         Linx_obj_inline;
         end
 
         function [fval,x,info] = Knitro_Linx(obj,x0,s,Gamma)
-        % calling knitro to solve the DDFact problem
+        % calling knitro to solve the Linx problem
         %{
         Input:
-        s       - the size of subset we want to choose, also equals to the
-                  summation of all elements of x0
+        s       - e'x=s
         x0      - initial point
-        Gamma   - row diagonal scaling paramter newC = Diag(Gamma)*C
-        comp    - indicate complementary bound, comp=1 means we need to
-                  compare with the lower bound associated with n-s
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C
 
         Output:
-        fval    - objective value of DDFact at optimal solution x
-        x       - optimal solution x
+        fval    - optimal value
+        x       - optimal solution
         info    - struct containing necesssary information
         %}
         Knitro_Linx_inline;
@@ -185,19 +183,70 @@ classdef MESP
 
         function [optGamma,info]=BFGS_Linx_Gamma(obj,s,GammaInit)
         % BFGS method for optimizaing row diagonal scaling parameter
-        % of Linx objective function (factorization bound)
+        % of Linx objective function 
         BFGS_Linx_Gamma_inline;
         end
     end
-    
+
     %% methods for linx bound with scalar scaling
     methods
         function [optgamma,info]=BFGS_Linx_gamma(obj,s)
         % BFGS method for optimizaing row diagonal scaling parameter
-        % of Linx objective function (factorization bound)
+        % of Linx objective function 
         BFGS_Linx_gam_inline;
         end
-    end    
+    end
+
+    %% methods for BQP bound
+    methods
+        function [fval,x,info] = SDPT3_BQP(obj,X0,s,Gamma)
+        % calling knitro to solve the BQP problem
+        %{
+        Input:
+        s       - e'x=s
+        X0      - initial point, x0=diag(X0)
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C
+
+        Output:
+        fval    - optimal value
+        x       - optimal solution
+        info    - struct containing necesssary information
+        %}
+        SDPT3_BQP_inline;
+        end 
+
+        function [optGamma,info] = BFGS_BQP_Gamma(obj,s,GammaInit)
+        %% BFGS method for optimizaing diagonal scaling parameter
+        % of BQP bound
+        BFGS_BQP_Gamma_inline;
+        end 
+    end
+
+    %% methods for complementary BQP bound
+    methods
+        function [fval,x,info] = SDPT3_BQP_comp(obj,Y0,s,Gamma)
+        % calling knitro to solve the complementary BQP problem
+        %{
+        Input:
+        s       - e'x=s
+        Y0      - initial point, x0=ones(n,1) - diag(Y0)
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C
+
+        Output:
+        fval    - optimal value
+        x       - optimal solution
+        info    - struct containing necesssary information
+        %}
+        SDPT3_BQP_comp_inline;
+        end 
+
+        function [optGamma,info] = BFGS_BQP_comp_Gamma(obj,s,GammaInit)
+        %% BFGS method for optimizaing diagonal scaling parameter
+        % of comp BQP bound
+        BFGS_BQP_comp_Gamma_inline;
+        end 
+    end
+
     %% mixing DDFact and Linx
     methods
 

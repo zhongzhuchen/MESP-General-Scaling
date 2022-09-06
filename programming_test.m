@@ -28,61 +28,81 @@ end
 %         fprintf('Heuristic method <heur> passed.\n');
 %     end
 % end
+% 
+% % factorization bound check
+% x0 = s/n*ones(n,1);
+% Gamma = ones(n,1);
+% [fval,x,info] = MESPInstance.Knitro_DDFact(x0,s,Gamma);
+% if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
+%     error('<Knitro_DDFact> method does not give a final feasible solution.\n')
+% elseif info.continuous_dualgap>1e-8
+%     error('<Knitro_DDFact> method does not give an final optimal solution.\n')
+% end
+% 
+% Gamma = rand(n,1)+0.5;
+% [fval,x,info] = MESPInstance.Knitro_DDFact(x0,s,Gamma);
+% if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
+%     error('<Knitro_DDFact> method does not give a final feasible solution.\n')
+% elseif info.continuous_dualgap>1e-8
+%     error('<Knitro_DDFact> method does not give an final optimal solution.\n')
+% else
+%     fprintf('<Knitro_DDFact> method passed.\n')
+% end
+% 
+% % general scaling vector for factorization optimization check
+% GammaInit = ones(n,1);
+% [optGamma,info] = MESPInstance.BFGS_DDFact_Gamma(s,GammaInit);
+% if info.absres>1e-6
+%     error('<BFGS_DDFact_Gamma> method does not give a local optimal solution.\n')
+% else
+%     fprintf('<BFGS_DDFact_Gamma> method passed.\n')
+% end
+% 
+% % complementary factorization bound check
+% x0 = s/n*ones(n,1);
+% Gamma = ones(n,1);
+% [fval,x,info] = MESPInstance.Knitro_DDFact_comp(x0,s,Gamma);
+% if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
+%     error('<Knitro_DDFact_comp> method does not give a final feasible solution.\n')
+% elseif info.continuous_dualgap>1e-8
+%     error('<Knitro_DDFact_comp> method does not give an final optimal solution.\n')
+% end
+% 
+% Gamma = rand(n,1)+0.5;
+% [fval,x,info] = MESPInstance.Knitro_DDFact_comp(x0,s,Gamma);
+% if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
+%     error('<Knitro_DDFact_comp> method does not give a final feasible solution.\n')
+% elseif info.continuous_dualgap>1e-8
+%     error('<Knitro_DDFact_comp> method does not give an final optimal solution.\n')
+% else
+%     fprintf('<Knitro_DDFact_comp> method passed.\n')
+% end
+% 
+% % general scaling vector for complementary factorization optimization check
+% GammaInit = ones(n,1);
+% [optGamma,info] = MESPInstance.BFGS_DDFact_comp_Gamma(s,GammaInit);
+% if info.absres>1e-6
+%     error('<BFGS_DDFact_comp_Gamma> method does not give a local optimal solution.\n')
+% else
+%     fprintf('<BFGS_DDFact_comp_Gamma> method passed.\n')
+% end
 
-% factorization bound check
+% Linx bound check
 x0 = s/n*ones(n,1);
 Gamma = ones(n,1);
-[fval,x,info] = MESPInstance.Knitro_DDFact(x0,s,Gamma);
+[fval,x,info] = MESPInstance.Knitro_Linx(x0,s,Gamma);
 if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
-    error('<Knitro_DDFact> method does not give a final feasible solution.\n')
+    error('<Knitro_Linx> method does not give a final feasible solution.\n')
 elseif info.continuous_dualgap>1e-8
-    error('<Knitro_DDFact> method does not give an final optimal solution.\n')
+    error('<Knitro_Linx> method does not give an final optimal solution.\n')
 end
 
 Gamma = rand(n,1)+0.5;
-[fval,x,info] = MESPInstance.Knitro_DDFact(x0,s,Gamma);
+[fval,x,info] = MESPInstance.Knitro_Linx(x0,s,Gamma);
 if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
-    error('<Knitro_DDFact> method does not give a final feasible solution.\n')
+    error('<Knitro_Linx> method does not give a final feasible solution.\n')
 elseif info.continuous_dualgap>1e-8
-    error('<Knitro_DDFact> method does not give an final optimal solution.\n')
+    error('<Knitro_Linx> method does not give an final optimal solution.\n')
 else
-    fprintf('<Knitro_DDFact> method passed.\n')
-end
-
-% general scaling vector for factorization optimization check
-GammaInit = ones(n,1);
-[optGamma,info] = MESPInstance.BFGS_DDFact_Gamma(s,GammaInit);
-if info.absres>1e-6
-    error('<BFGS_DDFact_Gamma> method does not give a local optimal solution.\n')
-else
-    fprintf('<BFGS_DDFact_Gamma> method passed.\n')
-end
-
-% complementary factorization bound check
-x0 = s/n*ones(n,1);
-Gamma = ones(n,1);
-[fval,x,info] = MESPInstance.Knitro_DDFact_comp(x0,s,Gamma);
-if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
-    error('<Knitro_DDFact_comp> method does not give a final feasible solution.\n')
-elseif info.continuous_dualgap>1e-8
-    error('<Knitro_DDFact_comp> method does not give an final optimal solution.\n')
-end
-
-Gamma = rand(n,1)+0.5;
-[fval,x,info] = MESPInstance.Knitro_DDFact_comp(x0,s,Gamma);
-if abs(sum(x)-s)>1e-10 | min(x)<-1e-10 | max(x)>1+1e-10
-    error('<Knitro_DDFact_comp> method does not give a final feasible solution.\n')
-elseif info.continuous_dualgap>1e-8
-    error('<Knitro_DDFact_comp> method does not give an final optimal solution.\n')
-else
-    fprintf('<Knitro_DDFact_comp> method passed.\n')
-end
-
-% general scaling vector for complementary factorization optimization check
-GammaInit = ones(n,1);
-[optGamma,info] = MESPInstance.BFGS_DDFact_comp_Gamma(s,GammaInit);
-if info.absres>1e-6
-    error('<BFGS_DDFact_comp_Gamma> method does not give a local optimal solution.\n')
-else
-    fprintf('<BFGS_DDFact_comp_Gamma> method passed.\n')
+    fprintf('<Knitro_Linx> method passed.\n')
 end

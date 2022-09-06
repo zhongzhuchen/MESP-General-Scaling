@@ -1,10 +1,11 @@
 %% test new heur method
-% load('data63.mat');
-% n=length(C);
-% m=5;
+load('data63.mat');
+n=length(C);
+m=5;
 % A = double.empty(0,n);
 % b = double.empty(0,1);
-% a = MESP(C,A,b);
+load('random_lincon.mat');
+MESPInstance = MESP(C,A,b);
 % LB = [];
 % Heurval =[];
 % for s=62% 10:(n-1)
@@ -44,9 +45,14 @@
 % load('data124.mat');
 % systermatic_experiments_scalar;
 
-for s=5:5:50
-    [fval,x,info] = Prob.Knitro_DDFact_comp(s/n*ones(n,1),s,ones(n,1));time=info.time;
-    [fval,dx,info] = Prob.DDFact_comp_obj(x,s,ones(n,1));
-    info.dualtime/time
-end
+% for s=5:5:50
+%     [fval,x,info] = Prob.Knitro_DDFact_comp(s/n*ones(n,1),s,ones(n,1));time=info.time;
+%     [fval,dx,info] = Prob.DDFact_comp_obj(x,s,ones(n,1));
+%     info.dualtime/time
+% end
 
+s = 5;
+Gamma = ones(n,1);
+% [fval,x,info] = SDPT3_BQP_light(diag(s/n*ones(n,1)),C,s,A,b,Gamma);
+% [fval,x,info] = MESPInstance.SDPT3_BQP(diag(s/n*ones(n,1)), s, Gamma);
+% [optGamma,info] = MESPInstance.BFGS_BQP_Gamma(s,Gamma);

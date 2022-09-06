@@ -3,7 +3,6 @@ function [fval,dx,info] = Linx_obj_Knitro(x,C,Gamma)
 %% obtain class properties and assign values
 % scale C with Gamma
 n = length(x);
-s=sum(x);
 C=diag(Gamma)*C;
 
 %% calculate the objective value and gradient
@@ -16,14 +15,19 @@ if flag>0
     warning("F(x) is not positive definite when calculating linx bound objective function.");
     fval=-Inf;
     dx=zeros(n,1);
+    info.dual_upsilon=nan*ones(n,1);
+    info.dual_nu=nan*ones(n,1);
+    info.dualgap=nan;
+    info.dualbound=nan;
 else
-    fval=sum(log(diag(R)))-s*log(Gamma(1)); % calculate the objective function
+    fval=sum(log(diag(R)))-sum(x.*log(Gamma)); % calculate the objective function
     Rinv=inv(R);
     K=C'*Rinv;
     % calculate the derivative: 1/2*diag(C'*F^{-1}*C-F^{-1})
     dx2=sum(Rinv.*Rinv,2);
-    dx=0.5*(sum(K.*K,2)-dx2);
+    dx=0.5*(sum(K.*K,2)-dx2)-log(Gamma);
     info.cache = 0.5*sum(dx2)-n/2;
+    info.dx2=dx2;
 end
 
 fval=-fval;

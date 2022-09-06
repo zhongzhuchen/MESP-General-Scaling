@@ -28,10 +28,13 @@ options = knitro_options('algorithm', 3, 'convex', 1, 'derivcheck', 0, 'outlev',
                          'feastol', 1e-10, 'opttol', 1e-10, 'bar_feasible',1,...
                          'bar_maxcrossit', 10);
 [x,knitro_fval,exitflag,output,lambda,~] = knitro_nlp(obj_fn,x0,A,b,Aeq,beq,lb,ub,[],extendedFeatures,options);
-% ========================================
 time=toc(TStart);
 tEnd=cputime-tStart;
+% ========================================
 fval=-knitro_fval;
+info.exitflag=exitflag;
+info.output=output;
+info.lambda=lambda;
 info.fval=fval;
 info.time=time;
 info.cputime = tEnd;
