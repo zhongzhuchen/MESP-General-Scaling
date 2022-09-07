@@ -1,29 +1,31 @@
 %% obtain class properties
+C=obj.C;
+Cinv=obj.C_comp;
+ldetC=obj.ldetC;
+n=obj.size;
 A_data=obj.A;
 b_data=obj.b;
+A_comp_data = -A_data;
+b_comp_data = b_data-A_data*ones(n,1);
 [m,~] = size(obj.A);
-info=struct;
-C = obj.C;
-n = obj.size;
 
 t1=tic;
 if n>200
-    TOL= 10^(-6);
+    TOL= 10^(-4);
     Numiterations=20; 
 else
-    TOL= 10^(-10);
-    Numiterations=200; 
+    TOL= 10^(-6);
+    Numiterations=50; 
 end
 
-% obtain the lower bound
+%% obtain the lower bound
 heurval = obj.obtain_lb(s);
 
-x0=s/n*ones(n,1);
-% Initialize Gamma
-csortoriginal=sort(diag(C),'descend');
+Y0=diag((n-s)/n*ones(n,1));
 
-% Select initial gamma
-gamma=1/csortoriginal(s); % initial scale factor if none provided
+% Initialize gamma
+csortoriginal=sort(diag(C),'descend');
+gamma=1/csortoriginal(n-s); % initial scale factor if none provided
 power=1.5;
 gamma=gamma^power;
 
@@ -33,10 +35,11 @@ k=1;
 c1=1e-4;
 c2=0.9;
 %solve the linx ralaxation for gamma and obtain x
-[bound,x,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,sqrt(gamma)*ones(n,1));
-AUX = C*diag(x)*C;
+[bound,x,ininfo] = SDPT3_BQP_comp_light(Y0,Cinv,s,A_data,b_data,ldetC,sqrt(gamma)*ones(n,1));
+Y=ininfo.Y;
+AUX = Cinv.*Y;
 %Compute F(gamma,x)
-F=gamma*AUX - diag(x) + eye(n);
+F=gamma*AUX - diag(x);
 F=(F+F')/2; % force symmetry
 %Compute inv(F(gamma,x))
 [U,D]=eig(F);
@@ -44,18 +47,18 @@ lam=diag(D);
 Finv=U*diag(1./lam)*U';
 %Compute the residual res
 gap=bound-heurval;
-res= n - s - trace(Finv*diag(ones(n,1)-x)); 
+res= s - trace(Finv*diag(x)); 
 allgamma=gamma;
 allres=res;
 allbound=bound;
 
-nx=x;
+nY=Y;
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL) 
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
     end
     %Compute MAT= H_G(gamma:=exp(psi))
-    Mat = gamma*(ones(n,1)-x)'*diag(Finv*AUX*Finv);
+    Mat = gamma*x'*diag(Finv*AUX*Finv);
     %Compute the search direction for Newton's method (dir=-res/Mat)
     dir=-res/Mat;
     edir=exp(dir);
@@ -66,14 +69,15 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     ngamma=gamma*exp(alfa*dir);
-    [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,sqrt(ngamma)*ones(n,1));
-    nAUX = C*diag(nx)*C;
-    nF=ngamma*nAUX - diag(nx) + eye(n);
+    [nbound,nx,ininfo] = SDPT3_BQP_comp_light(nY,Cinv,s,A_data,b_data,ldetC,sqrt(ngamma)*ones(n,1));
+    nY=ininfo.Y;
+    nAUX = Cinv.*nY;
+    nF=ngamma*nAUX + diag(nx);
     nF=(nF+nF')/2; % force symmetry
     [U,D]=eig(nF);
     lam=diag(D);
     nFinv=U*diag(1./lam)*U';
-    nres= n - s - trace(nFinv*diag(ones(n,1)-nx)); 
+    nres= s - trace(nFinv*diag(nx)); 
     if nbound-bound>c1*alfa*dir*res
         judge=0;
     elseif abs(dir*nres)>c2*abs(dir*res)
@@ -87,14 +91,15 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     while judge==0
         alfa=(a+b)/2;
         ngamma=gamma*exp(alfa*dir);
-        [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,sqrt(ngamma)*ones(n,1));
-        nAUX = C*diag(nx)*C;
-        nF=ngamma*nAUX - diag(nx) + eye(n);
+        [nbound,nx,ininfo] = SDPT3_BQP_comp_light(nY,Cinv,s,A_data,b_data,ldetC,sqrt(ngamma)*ones(n,1));
+        nY=ininfo.Y;
+        nAUX = Cinv.*nY;
+        nF=ngamma*nAUX + diag(nx);
         nF=(nF+nF')/2; % force symmetry
         [U,D]=eig(nF);
         lam=diag(D);
         nFinv=U*diag(1./lam)*U';
-        nres= n - s - trace(nFinv*diag(ones(n,1)-nx)); 
+        nres= s - trace(nFinv*diag(nx));
         if nbound-bound>c1*alfa*dir*res
             b=alfa;
         elseif abs(dir*nres)>c2*abs(dir*res)
@@ -124,7 +129,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optgamma=allgamma(optiteration);
-[bound1,~,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,ones(n,1));
+[bound1,~,~] = SDPT3_BQP_comp_light(nY,Cinv,s,A_data,b_data,ldetC,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optgamma=1;

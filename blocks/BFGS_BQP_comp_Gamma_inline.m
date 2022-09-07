@@ -15,7 +15,7 @@ if n>200
     Numiterations=20; 
 else
     TOL= 10^(-6);
-    Numiterations=100; 
+    Numiterations=50; 
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
@@ -64,7 +64,7 @@ nY=Y;
 
 %% loop
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
-    sprintf('iteration: %d, res: %f',k,res)
+    sprintf('iteration: %d, res: %f',k,res);
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
         if k>=2 

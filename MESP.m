@@ -181,19 +181,22 @@ classdef MESP
         Knitro_Linx_inline;
         end
 
+        function [optgamma,info]= Newton_Linx_gamma(obj,s)
+        % Newton method for optimizaing scaling parameter 
+        % of Linx objective function 
+        Newton_Linx_gam_inline;
+        end
+
         function [optGamma,info]=BFGS_Linx_Gamma(obj,s,GammaInit)
         % BFGS method for optimizaing row diagonal scaling parameter
         % of Linx objective function 
         BFGS_Linx_Gamma_inline;
         end
-    end
 
-    %% methods for linx bound with scalar scaling
-    methods
-        function [optgamma,info]=BFGS_Linx_gamma(obj,s)
-        % BFGS method for optimizaing row diagonal scaling parameter
+        function [optGamma,info]=Newton_Linx_Gamma(obj,s,GammaInit)
+        % Newton method for optimizaing row diagonal scaling parameter
         % of Linx objective function 
-        BFGS_Linx_gam_inline;
+        Newton_Linx_Gamma_inline;
         end
     end
 
@@ -214,6 +217,12 @@ classdef MESP
         %}
         SDPT3_BQP_inline;
         end 
+        
+        function [optgamma,info]= Newton_BQP_gamma(obj,s)
+        % Newton method for optimizaing scaling parameter 
+        % of BQP objective function 
+        Newton_BQP_gam_inline;
+        end
 
         function [optGamma,info] = BFGS_BQP_Gamma(obj,s,GammaInit)
         %% BFGS method for optimizaing diagonal scaling parameter
@@ -239,6 +248,12 @@ classdef MESP
         %}
         SDPT3_BQP_comp_inline;
         end 
+        
+        function [optgamma,info]= Newton_BQP_comp_gamma(obj,s)
+        % Newton method for optimizaing scaling parameter 
+        % of comp BQP objective function 
+        Newton_BQP_comp_gam_inline;
+        end
 
         function [optGamma,info] = BFGS_BQP_comp_Gamma(obj,s,GammaInit)
         %% BFGS method for optimizaing diagonal scaling parameter

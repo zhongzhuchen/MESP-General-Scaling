@@ -8,17 +8,17 @@ n = obj.size;
 t1=tic;
 
 if n>200
-    TOL= 10^(-4);
+    TOL= 10^(-6);
     Numiterations=20; 
 else
-    TOL= 10^(-8);
-    Numiterations=50; 
+    TOL= 10^(-10);
+    Numiterations=200; 
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
 heurval = obj.obtain_lb(s);
 
-X0=diag(s/n*ones(n,1));
+x0=s/n*ones(n,1);
 % Initialize Gamma
 Gamma=GammaInit;
 
@@ -29,11 +29,9 @@ c1=1e-4;
 c2=0.9;
 
 %% calculate the gradient of linx bound with respect to Gamma
-[bound,x,ininfo] = SDPT3_BQP_light(X0,C,s,A_data,b_data,Gamma);
-
-X=ininfo.X;
-scaleC=diag(Gamma)*C*diag(Gamma);
-AUX = scaleC.*X;
+[bound,x,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,Gamma);
+scaleC=diag(Gamma)*C;
+AUX = scaleC*diag(x)*scaleC';
 B = - diag(x) + eye(n);
 %Compute F(gamma,x)
 F= AUX+B;
@@ -45,44 +43,26 @@ Finv=U*diag(1./lam)*U';
 %Compute the residual res
 gap=bound-heurval;
 
-grad=2*(diag(Finv*AUX)-x);
+grad=diag(Finv*AUX)-x;
 res= norm(grad);
+
+Hmat = 2*B*diag(diag(Finv)) - 2*B*(Finv.^2)*B; 
 
 allGamma=Gamma;
 allres=res;
 allbound=bound;
 
-H=eye(n); % initialize the inverse Hessian approximation
-
 %% we use the optimal solution of every last linx bound as the initial point 
 % for solving the next linx bound, trick for accelarating optimization
-nX=X;
+nx=x;
 
 %% loop
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
-    sprintf('iteration: %d, res: %f',k,res)
+    sprintf('iteration: %d, res:%f',k,res )
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
-        if k>=2 
-            s_gmuly=deltag'*deltay;
-            if k==2 
-                gam=s_gmuly/(deltag'*deltag);
-                H=gam*H;
-            end
-            if(s_gmuly>=TOL)
-                Hg=H*deltag;
-                Hgy=Hg*deltay';
-                gHg=deltag'*Hg;
-                yg=s_gmuly;
-                H=H+(yg+gHg)/(yg^2)*(deltay*deltay')-(Hgy+Hgy')/yg;
-            end
-        end
     end
-    if rank(H)<n
-        H=eye(n);
-    end
-    %Compute the search direction for Newton's method (dir=-res/Mat)
-    dir=-H*grad;
+    dir = -Hmat\grad;
     edir=exp(dir);
     if norm(edir)==Inf || norm(edir)==0 || isnan(norm(edir))
         if norm(dir)==Inf || isnan(norm(dir))
@@ -94,50 +74,42 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
-    [nbound,nx,ininfo] = SDPT3_BQP_light(nX,C,s,A_data,b_data,nGamma);
-    nX=ininfo.X;
-    scaleC=diag(nGamma)*C*diag(nGamma);
-    nAUX = scaleC.*nX;
+    [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,nGamma);
+    scaleC=diag(nGamma)*C;
+    nAUX = scaleC*diag(nx)*scaleC';
     nB = - diag(nx) + eye(n);
     nF=nAUX+nB;
     nF=(nF+nF')/2; % force symmetry
     [U,D]=eig(nF);
     lam=diag(D);
     nFinv=U*diag(1./lam)*U';
-    ngrad=2*(diag(nFinv*nAUX)-nx);
+    ngrad=diag(nFinv*nAUX)-nx;
     nres= norm(ngrad);
-
-    [U,D]=eig(H);
-    % sprintf("nbound:%f, nres:%f, Hessmineig:%f, min(nGamma):%f", nbound, nres,min(diag(D)),min(nGamma))
 
     if nbound-bound>c1*alfa*dir'*grad
         judge=0;
-        b=1;
-        a=0;
     elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
         judge=0;
-        b=10;
-        a=1;
     else
         judge=1;
     end
     %line search
-   
+    b=1;
+    a=0;
     while judge==0
         alfa=(a+b)/2;
         nGamma=Gamma.*exp(alfa*dir);
-        [nbound,nx,ininfo] = SDPT3_BQP_light(nX,C,s,A_data,b_data,nGamma);
-        nX=ininfo.X;
-        scaleC=diag(nGamma)*C*diag(nGamma);
-        nAUX = scaleC.*nX;
+        [nbound,nx,~] = Knitro_Linx_light(nx,C,s,A_data,b_data,nGamma);
+        scaleC=diag(nGamma)*C;
+        nAUX = scaleC*diag(nx)*scaleC';
         nB = - diag(nx) + eye(n);
         nF=nAUX+nB;
         nF=(nF+nF')/2; % force symmetry
         [U,D]=eig(nF);
         lam=diag(D);
         nFinv=U*diag(1./lam)*U';
-        ngrad=2*(diag(nFinv*nAUX)-nx);
-        nres= norm(ngrad);
+        ngrad=diag(nFinv*nAUX)-nx;
+        nres= norm(ngrad); 
         if nbound-bound>c1*alfa*dir'*grad
             b=alfa;
         elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
@@ -157,13 +129,15 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     Finv=nFinv;
     B=nB;
     AUX=nAUX;
-    X=nX;
+    x=nx;
     bound=nbound;
     gap=bound-heurval;
     allGamma=[allGamma,Gamma];
     allres=[allres,res];
     allbound=[allbound,bound];
     k=k+1; 
+    % update Hessian matrix
+    Hmart = 2*B*diag(diag(Finv)) - 2*B*(Finv.^2)*B;
 end
 info.iterations=k-1;
 info.gap=gap;
@@ -171,7 +145,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~] = SDPT3_BQP_light(X0,C,s,A_data,b_data,ones(n,1));
+[bound1,~,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,ones(n,1));
 if optbound>bound1
     optbound=bound1;
     optGamma=ones(n,1);
