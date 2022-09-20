@@ -8,11 +8,11 @@ n = obj.size;
 t1=tic;
 
 if n>200
-    TOL= 10^(-4);
+    TOL= 10^(-6);
     Numiterations=20; 
 else
-    TOL= 10^(-8);
-    Numiterations=50; 
+    TOL= 10^(-10);
+    Numiterations=200; 
 end
 
 %% calculate the better lower bound among C and Cinv if C is invertible
@@ -26,7 +26,8 @@ difgap=1;
 k=1;
 
 c1=1e-4;
-c2=0.9;
+c2=0.95;
+timelimit = 350;
 
 %% calculate the gradient of linx bound with respect to Gamma
 [bound,x,ininfo] = SDPT3_BQP_light(X0,C,s,A_data,b_data,Gamma);
@@ -57,10 +58,9 @@ H=eye(n); % initialize the inverse Hessian approximation
 %% we use the optimal solution of every last linx bound as the initial point 
 % for solving the next linx bound, trick for accelarating optimization
 nX=X;
-
 %% loop
-while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
-    sprintf('iteration: %d, res: %f',k,res)
+while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit)
+    sprintf('iteration: %d, res: %f',k,abs(res));
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
         if k>=2 
@@ -116,8 +116,8 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
         a=0;
     elseif abs(dir'*ngrad)>c2*abs(dir'*grad)
         judge=0;
-        b=10;
-        a=1;
+        b=2;
+        a=0;
     else
         judge=1;
     end
@@ -165,6 +165,23 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 end
+
+if gap <= TOL
+    info.exitflag=0;
+elseif abs(res) <= TOL
+    info.exitflag=1;
+elseif difgap <= TOL
+    info.exitflag=2;
+elseif k>Numiterations
+    info.exitflag=3;
+elseif toc(t1)> timelimit
+    info.exitflag=4;
+else
+    info.exitflag=5;
+end
+
+info.maxiteration = Numiterations;
+info.tol = TOL;
 info.iterations=k-1;
 info.gap=gap;
 info.absres=abs(res);

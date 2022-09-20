@@ -8,11 +8,11 @@ n = obj.size;
 
 t1=tic;
 if n>200
-    TOL= 10^(-4);
+    TOL= 10^(-6);
     Numiterations=20; 
 else
-    TOL= 10^(-6);
-    Numiterations=50; 
+    TOL= 10^(-10);
+    Numiterations=200; 
 end
 
 %% obtain the lower bound
@@ -31,6 +31,8 @@ k=1;
 
 c1=1e-4;
 c2=0.9;
+timelimit = 350;
+
 %solve the linx ralaxation for gamma and obtain x
 [bound,x,ininfo] = SDPT3_BQP_light(X0,C,s,A_data,b_data,sqrt(gamma)*ones(n,1));
 X=ininfo.X;
@@ -50,7 +52,7 @@ allres=res;
 allbound=bound;
 
 nX=X;
-while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL) 
+while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit ) 
     sprintf('iteration: %d, res: %f',k,res);
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
@@ -121,6 +123,23 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 end
+
+if gap <= TOL
+    info.exitflag=0;
+elseif abs(res) <= TOL
+    info.exitflag=1;
+elseif difgap <= TOL
+    info.exitflag=2;
+elseif k>Numiterations
+    info.exitflag=3;
+elseif toc(t1)> timelimit
+    info.exitflag=4;
+else
+    info.exitflag=5;
+end
+
+info.maxiteration = Numiterations;
+info.tol = TOL;
 info.iterations=k-1;
 info.gap=gap;
 info.absres=abs(res);

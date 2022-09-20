@@ -27,6 +27,7 @@ k=1;
 
 c1=1e-4;
 c2=0.9;
+timelimit = 350;
 
 %% calculate the gradient of linx bound with respect to Gamma
 [bound,x,~] = Knitro_Linx_light(x0,C,s,A_data,b_data,Gamma);
@@ -57,7 +58,7 @@ H=eye(n); % initialize the inverse Hessian approximation
 nx=x;
 
 %% loop
-while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
+while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit)
     % sprintf('iteration: %d',k);
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
@@ -158,6 +159,21 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 end
+
+if gap <= TOL
+    info.exitflag=0;
+elseif abs(res) <= TOL
+    info.exitflag=1;
+elseif difgap <= TOL
+    info.exitflag=2;
+elseif k>Numiterations
+    info.exitflag=3;
+else
+    info.exitflag=4;
+end
+
+info.maxiteration = Numiterations;
+info.tol = TOL;
 info.iterations=k-1;
 info.gap=gap;
 info.absres=abs(res);

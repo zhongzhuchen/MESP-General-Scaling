@@ -11,11 +11,11 @@ b_comp_data = b_data-A_data*ones(n,1);
 
 t1=tic;
 if n>200
-    TOL= 10^(-4);
+    TOL= 10^(-6);
     Numiterations=20; 
 else
-    TOL= 10^(-6);
-    Numiterations=50; 
+    TOL= 10^(-10);
+    Numiterations=200; 
 end
 
 %% obtain the lower bound
@@ -24,7 +24,7 @@ heurval = obj.obtain_lb(s);
 Y0=diag((n-s)/n*ones(n,1));
 
 % Initialize gamma
-csortoriginal=sort(diag(C),'descend');
+csortoriginal=sort(diag(Cinv),'descend');
 gamma=1/csortoriginal(n-s); % initial scale factor if none provided
 power=1.5;
 gamma=gamma^power;
@@ -34,12 +34,14 @@ k=1;
 
 c1=1e-4;
 c2=0.9;
+timelimit = 350;
+
 %solve the linx ralaxation for gamma and obtain x
 [bound,x,ininfo] = SDPT3_BQP_comp_light(Y0,Cinv,s,A_data,b_data,ldetC,sqrt(gamma)*ones(n,1));
 Y=ininfo.Y;
 AUX = Cinv.*Y;
 %Compute F(gamma,x)
-F=gamma*AUX - diag(x);
+F=gamma*AUX + diag(x);
 F=(F+F')/2; % force symmetry
 %Compute inv(F(gamma,x))
 [U,D]=eig(F);
@@ -53,7 +55,7 @@ allres=res;
 allbound=bound;
 
 nY=Y;
-while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL) 
+while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<=timelimit) 
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
     end
@@ -123,6 +125,21 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL)
     allbound=[allbound,bound];
     k=k+1; 
 end
+if gap <= TOL
+    info.exitflag=0;
+elseif abs(res) <= TOL
+    info.exitflag=1;
+elseif difgap <= TOL
+    info.exitflag=2;
+elseif k>Numiterations
+    info.exitflag=3;
+elseif toc(t1)> timelimit
+    info.exitflag=4;
+else
+    info.exitflag=5;
+end
+info.maxiteration = Numiterations;
+info.tol = TOL;
 info.iterations=k-1;
 info.gap=gap;
 info.absres=abs(res);

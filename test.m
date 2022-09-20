@@ -2,13 +2,13 @@
 load('data63.mat');
 n=length(C);
 m=5;
-% A = double.empty(0,n);
-% b = double.empty(0,1);
-load('random_lincon.mat');
-MESPInstance = MESP(C,A,b);
+A = double.empty(0,n);
+b = double.empty(0,1);
+% load('random_lincon.mat');
+MESPInstance1 = MESP(C,A,b);
 % LB = [];
 % Heurval =[];
-% for s=62% 10:(n-1)
+% for s=10% 10:(n-1)
 %     s
 %     LB(end+1)=a.obtain_lb(s);
 %     [xind, heurval] = heur(C,s,A,b);
@@ -16,8 +16,8 @@ MESPInstance = MESP(C,A,b);
 %     x=zeros(n,1);
 %     x(xind)=1;
 %     b1 = A1*x-ones(m,1);
-%     a1 = MESP(C,A1,b1);
-%     Heurval(end+1)=a1.obtain_lb(s);
+%     MESPInstance1 = MESP(C,A1,b1);
+%     Heurval(end+1)=MESPInstance1.obtain_lb(s);
 % end
 % compare = [LB', Heurval'];
 
