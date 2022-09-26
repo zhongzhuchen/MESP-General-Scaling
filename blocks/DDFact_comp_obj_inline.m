@@ -31,10 +31,9 @@ info.dual_upsilon = xlp(1:n);
 info.dual_nu = xlp((n+1):2*n);
 info.dual_pi =  xlp((2*n+1):(2*n+m));
 info.dual_tau = xlp(end);
-info.dualgap=dualgap-(n-s)+sum(dx1)-sum(x.*log(Gamma));
+info.dualgap=dualgap-(n-s)-sum(dx)+sum((ones(n,1)-x).*log(Gamma));
 
 %% transform objecvtive value and solution back
-fval=fval+ldetC;
 info.fval=fval;
 info.dualbound=fval+info.dualgap;
 info.cache=sum(dx1)-(n-s);

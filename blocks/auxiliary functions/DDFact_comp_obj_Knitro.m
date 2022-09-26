@@ -1,12 +1,11 @@
 function [fval,dx,info] = DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma)
 % scale F_comp, Fsquare_comp with Gamma
 n=length(x);
-F=F_comp;
-% F=diag(sqrt(Gamma))*F_comp;
+F=diag(sqrt(Gamma))*F_comp;
 Fsquare = Fsquare_comp;
-% for i=1:n
-%     Fsquare(:,:,i)=Gamma(i)*Fsquare(:,:,i);
-% end
+for i=1:n
+    Fsquare(:,:,i)=Gamma(i)*Fsquare(:,:,i);
+end
 d=length(Fsquare(:,:,1));
 
 %% transform to the complementary formation
@@ -70,7 +69,7 @@ end
 K1=F*U;
 K2=K1.*(eigDual');
 dx1=sum(K2.*K1,2);
-dx=dx1;
+dx=dx1-log(Gamma);
 %% calculate dual bound and dual solutions by calling Knitro
 % % cache for mixing
 % info.cache1=-s;
@@ -81,7 +80,7 @@ dx=-dx;
 x=ones(n,1)-x;
 
 sort_eigDual=sort(eigDual);
-fval=-sum(log(sort_eigDual(1:(n-s))));
+fval=-sum(log(sort_eigDual(1:(n-s))))-sum((ones(n,1)-x).*log(Gamma));
 
 %% transform objecvtive value and solution back
 fval=fval+ldetC;
