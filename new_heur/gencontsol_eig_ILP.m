@@ -20,10 +20,11 @@ options = knitro_options('algorithm',3,...  % active-set/simplex algorithm
 [x,heurval,exitflag,~] = ...
     knitro_milp(f,xType,A,b,Aeq,beq,lb,ub,x0,[],options);
 
-if exitflag<-199
-    error('The MESP instance is infeasible.')
+if exitflag>-199 || -400 >= exitflag >= -406
+    xind=transpose(1:n);
+    xind=xind(x>0.5);
+else
+    error('The MESP instance is infeasible or the solver does not find any feasible solution.')
 end
-xind=transpose(1:n);
-xind=xind(x>0.5);
 end
 
