@@ -311,7 +311,6 @@ else
     [x,lb]=heur(C,s,A_data,b_data);
     if obj.r == n
         [x2,lb2]=heur(obj.C_comp,n-s,-A_data,b_data-A_data*ones(n,1));
-
         lb2 = lb2+obj.ldetC;
         if lb2>lb
             lb=lb2;
