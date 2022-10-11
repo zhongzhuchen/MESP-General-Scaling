@@ -27,7 +27,7 @@ end
 % if exitflag>-199 || -400 >= exitflag >= -406
 %     xind=transpose(1:n);
 %     xind=xind(x>0.5);
-% else
+% elsei
 %     error('The MESP instance is infeasible or the solver does not find any feasible solution.')
 % end
 end
