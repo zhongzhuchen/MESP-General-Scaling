@@ -16,6 +16,7 @@ for outs= 2:(Corder-1)
     iteration = 0;
     C=Coriginal;
     nearzero_intgap = 0;
+    nearzero_intgap_itr = NaN;
     while true
         n = length(C);
         x0=s/n*ones(n,1);
@@ -36,6 +37,7 @@ for outs= 2:(Corder-1)
                 info_Linx.integrality_gap, info_Fact.integrality_gap, info_cFact.integrality_gap);
             if info_Linx.integrality_gap < 1e-6 || info_Fact.integrality_gap < 1e-6 || info_cFact.integrality_gap < 1e-6 
                 warning("Intergrality gap too small.\n");
+                nearzero_intgap_itr = iteration;
                 nearzero_intgap = 1;
             end
             fixto0list=union(info_Linx.fixto0list, info_Fact.fixto0list);
@@ -94,6 +96,8 @@ for outs= 2:(Corder-1)
     fix63(outs).fixto0list = allfix0;
     fix63(outs).fixto1list = allfix1;
     fix63(outs).nearzero_intgap = nearzero_intgap;
+    fix63(outs).nearzero_intgap_itr = nearzero_intgap_itr;
+    fix63(outs).iteration = iteration;
 end
 
 
