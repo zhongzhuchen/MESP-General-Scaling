@@ -31,7 +31,7 @@ k=1;
 
 c1=1e-4;
 c2=0.9;
-timelimit = 350;
+% timelimit = 350;
 
 %solve the linx ralaxation for gamma and obtain x
 [bound,x,ininfo] = SDPT3_BQP_light(X0,C,s,A_data,b_data,sqrt(gamma)*ones(n,1));
@@ -52,7 +52,7 @@ allres=res;
 allbound=bound;
 
 nX=X;
-while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit ) 
+while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit) 
     sprintf('iteration: %d, res: %f',k,res);
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));

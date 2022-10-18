@@ -27,7 +27,7 @@ k=1;
 
 c1=1e-4;
 c2=0.95;
-timelimit = 350;
+% timelimit = 350;
 
 %% calculate the gradient of linx bound with respect to Gamma
 [bound,x,ininfo] = SDPT3_BQP_light(X0,C,s,A_data,b_data,Gamma);

@@ -27,7 +27,7 @@ difgap=1;
 k=1;
 c1=1e-4;
 c2=0.9;
-timelimit = 350;
+% timelimit = 350;
 
 %% calculate the gradient of fact bound with respect to Gamma
 [bound,x,~]=Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma);
