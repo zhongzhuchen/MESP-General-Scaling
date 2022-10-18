@@ -1,4 +1,4 @@
-load('data63.mat');
+load('data2000.mat');
 Corder = length(C);
 Coriginal = C;
 n = Corder;
@@ -24,9 +24,12 @@ for outs= 2:(Corder-1)
         b = double.empty(0,1);
         MESPInstance = MESP(C,A,b);
         [optgamma,~]= MESPInstance.Newton_Linx_gamma(s);
-        [fval,x,info_Linx] = MESPInstance.Knitro_Linx(x0,s,sqrt(optgamma)*ones(n,1));
-        [fval,x,info_Fact] = MESPInstance.Knitro_DDFact(x0,s,ones(n,1));
-        [fval,x,info_cFact] = MESPInstance.Knitro_DDFact_comp(x0,s,ones(n,1));
+        [optGamma,info_Linxg2]= MESPInstance.BFGS_Linx_Gamma(s, sqrt(optgamma)*ones(n,1));
+        [fval,x,info_Linx] = MESPInstance.Knitro_Linx(x0,s,optGamma);
+        [optGamma,info_Factg2]=MESPInstance.BFGS_DDFact_Gamma(s,ones(n,1));
+        [fval,x,info_Fact] = MESPInstance.Knitro_DDFact(x0,s,optGamma);
+        [optGamma,info_cFactg2]=MESPInstance.BFGS_DDFact_comp_Gamma(s,ones(n,1));
+        [fval,x,info_cFact] = MESPInstance.Knitro_DDFact_comp(x0,s,optGamma);
         if isempty(info_Linx.fixto0list) && isempty(info_Linx.fixto1list) && ...
                 isempty(info_Fact.fixto0list) && isempty(info_Fact.fixto1list) &&...
                 isempty(info_cFact.fixto0list) && isempty(info_cFact.fixto1list)

@@ -54,7 +54,7 @@ nx=x;
 
 %% loop
 while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)<= timelimit)
-    sprintf('iteration: %d, res: %f',k,abs(res))
+    sprintf('iteration: %d, res: %f',k,abs(res));
     if k>1
         difgap=abs(allbound(k)-allbound(k-1));
         if k>=2 

@@ -5,9 +5,15 @@
 % ub=ones(n,1);
 % [x,fval,exitflag,OUTPUT] = intlinprog(f,1:4,A,b,[],[],lb,ub,[]);
 for s=2:62
-    sprintf("s:%d, fix0:%d, fix1:%d, nearzero_intgap_itr:%d", s, length(fix63(s).fixto0list), ...
-        length(fix63(s).fixto1list), fix63(s).nearzero_intgap_itr)
-    if length(fix63(s).fixto0list)+length(fix63(s).fixto1list) == 63
-        s
-    end
+%     sprintf("s:%d, fix0:%d, fix1:%d, nearzero_intgap_itr:%d", s, length(fix63(s).fixto0list), ...
+%         length(fix63(s).fixto1list), fix63(s).nearzero_intgap_itr)
+%     if length(fix63(s).fixto0list)+length(fix63(s).fixto1list) == 63
+%         s
+%     end
+    x=zeros(63,1);
+    x(fix63(s).fixto0list)=1;
+    fix63(s).fixto0list = x;
+    x=zeros(63,1);
+    x(fix63(s).fixto1list)=1;
+    fix63(s).fixto1list = x;
 end
