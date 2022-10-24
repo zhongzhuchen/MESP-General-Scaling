@@ -37,7 +37,7 @@ classdef MESP
                 error(" C is not positive semidefinite");
             end
             [~, D] = eig(C);
-            if min(diag(D)) < 1e-10
+            if min(diag(D)) < -1e-10
                 error(" C is not positive semidefinite");
             end
 

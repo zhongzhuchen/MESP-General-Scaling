@@ -1,19 +1,50 @@
-% f=-[3;4;7;8];
-% A=[10,15,25,30];
-% b=50;
-% lb=zeros(n,1);
-% ub=ones(n,1);
-% [x,fval,exitflag,OUTPUT] = intlinprog(f,1:4,A,b,[],[],lb,ub,[]);
-for s=2:62
-%     sprintf("s:%d, fix0:%d, fix1:%d, nearzero_intgap_itr:%d", s, length(fix63(s).fixto0list), ...
-%         length(fix63(s).fixto1list), fix63(s).nearzero_intgap_itr)
-%     if length(fix63(s).fixto0list)+length(fix63(s).fixto1list) == 63
-%         s
-%     end
-    x=zeros(63,1);
-    x(fix63(s).fixto0list)=1;
-    fix63(s).fixto0list = x;
-    x=zeros(63,1);
-    x(fix63(s).fixto1list)=1;
-    fix63(s).fixto1list = x;
+% load('data63.mat');
+% % iterative_fixing_O;
+% iterative_fixing_G;
+% load('data90.mat');
+% % iterative_fixing_O;
+% iterative_fixing_G;
+% load('data124.mat');
+% % iterative_fixing_O;
+% iterative_fixing_G;
+% solved_instance = struct;
+for n=[63]
+    filename = strcat('fix', num2str(n),'_LFcF_oscaling.mat');
+    load(filename);
+    % load('fix63_LFcF_oscaling.mat');
+    solvelist = [];
+    fixalllist1 = [];
+    fixnum = [];
+    for s=2:(n-1)
+        if fix(s).nearzero_intgap == 1
+            solvelist(end+1)=s;
+        end
+        if length(fix(s).fixto0list)+length(fix(s).fixto1list) >= n
+            fixalllist1(end+1)=s;
+        end
+        fixnum(end+1) = min(length(fix(s).fixto0list)+length(fix(s).fixto1list), n);
+    end
+    fixalllist1 = union(solvelist, fixalllist1)
+    solved_instance.oscaling_63_solvelist = fixalllist1;
+    fixnums.oscaling_124 = fixnum;
+
+    filename = strcat('fix', num2str(n),'_LFcF_gscaling.mat');
+    load(filename);
+    % load('fix63_LFcF_gscaling.mat');
+    solvelist = [];
+    fixalllist2 = [];
+    fixnum = [];
+    for s=2:(n-1)
+        if fix(s).nearzero_intgap == 1
+            solvelist(end+1)=s;
+        end
+        if length(fix(s).fixto0list)+length(fix(s).fixto1list) >= n
+            fixalllist2(end+1)=s;
+        end
+        fixnum(end+1) = min(length(fix(s).fixto0list)+length(fix(s).fixto1list), n);
+    end
+    fixalllist2 = union(solvelist, fixalllist2)
+    solved_instance.gscaling_63_solvelist = fixalllist2;
+    fixnums.gscaling_124 = fixnum;
+%     [c,~] = ismember(fixalllist1,fixalllist2)
 end
