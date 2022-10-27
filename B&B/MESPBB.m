@@ -13,14 +13,14 @@ if restart      % restart from checkpoint file
     load('checkpoint1.mat');
 else         
     %      ******* problem initialization ********
-    load('data63.mat');
+    load('data124.mat');
     n=length(C);
 %     fid = fopen('DATA63','r');
 %     %
 %     [C,count] = fscanf(fid,'%f',[n,n]);
 %     fclose(fid);
     %
-    s=10;
+    s=30;
     complement=0;       % initial setting for bound (original or complement)
     %
     [U,D]=eig(C);
@@ -210,7 +210,6 @@ while nq > 0              % queue is not empty
     end
     %
     Nscale(kscale)=Nscale(kscale)+1;    % number of gamma scale factors used
-    %
     lscalerror=ceil(log2(scalerror));   % record error in scaling criterion (log2)
     lscalerror=min(lscalerror,10);
     lscalerror=max(lscalerror,-10);
