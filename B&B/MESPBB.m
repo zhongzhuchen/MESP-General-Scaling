@@ -28,8 +28,8 @@ else
     logdetC=log(prod(lam));  
     Cinv=U*diag(1./lam)*U';
     %
-    [xind,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-    [cxind,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
+    [xind,heurval]=heur1(C,n,s);        % HEURSITIC ON ORIGINAL
+    [cxind,cheurval]=heur1(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
     if cheurval+logdetC > heurval      % PICK THE BEST
       xind=setdiff(transpose(1:n),cxind(1:n-s));
       heurval=cheurval+logdetC;
