@@ -17,7 +17,7 @@ if Nfathomed == 0; % still on initial dive; put harder branch on last
         Qprob(nq,3)=nfix1;
         Qprob(nq,4)=depth+1;
         Qprob(nq,5)=complement;
-        Qprob(nq,6)=newgamma;
+        Qprob(nq,6-1+n)=newGamma;
         %
         vfix0(nfix0+1)=branchvar_zero;
         Qfix0(nq,:)=vfix0;
@@ -30,7 +30,7 @@ if Nfathomed == 0; % still on initial dive; put harder branch on last
         Qprob(nq,3)=nfix1+1;
         Qprob(nq,4)=depth+1;
         Qprob(nq,5)=complement;
-        Qprob(nq,6)=newgamma;
+        Qprob(nq,6-1+n)=newGamma;
         %
         vfix1(nfix1+1)=branchvar_zero;
         Qfix1(nq,:)=vfix1;
@@ -43,7 +43,7 @@ if Nfathomed == 0; % still on initial dive; put harder branch on last
         Qprob(nq,3)=nfix1+1;
         Qprob(nq,4)=depth+1;
         Qprob(nq,5)=complement;
-        Qprob(nq,6)=newgamma;
+        Qprob(nq,6-1+n)=newGamma;
         %
         vfix1(nfix1+1)=branchvar_one;
         Qfix1(nq,:)=vfix1;
@@ -56,7 +56,7 @@ if Nfathomed == 0; % still on initial dive; put harder branch on last
         Qprob(nq,3)=nfix1;
         Qprob(nq,4)=depth+1;
         Qprob(nq,5)=complement;
-        Qprob(nq,6)=newgamma;
+        Qprob(nq,6-1+n)=newGamma;
         %
         vfix0(nfix0+1)=branchvar_one;
         Qfix0(nq,:)=vfix0;
@@ -70,7 +70,7 @@ elseif branchfractional % branch on most fractional variable; order does not mat
             Qprob(nq,3)=nfix1+1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix1(nfix1+1)=maxfracvar;
             Qfix1(nq,:)=vfix1;
@@ -83,7 +83,7 @@ elseif branchfractional % branch on most fractional variable; order does not mat
             Qprob(nq,3)=nfix1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix0(nfix0+1)=maxfracvar;
             Qfix0(nq,:)=vfix0;
@@ -98,7 +98,7 @@ elseif nhalf <= 1 % Dive is over, but not enough half variables to do anything s
             Qprob(nq,3)=nfix1+1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix1(nfix1+1)=branchvar_zero;
             Qfix1(nq,:)=vfix1;
@@ -111,7 +111,7 @@ elseif nhalf <= 1 % Dive is over, but not enough half variables to do anything s
             Qprob(nq,3)=nfix1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix0(nfix0+1)=branchvar_zero;
             Qfix0(nq,:)=vfix0;
@@ -124,7 +124,7 @@ elseif nhalf <= 1 % Dive is over, but not enough half variables to do anything s
             Qprob(nq,3)=nfix1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix0(nfix0+1)=branchvar_one;
             Qfix0(nq,:)=vfix0;
@@ -137,7 +137,7 @@ elseif nhalf <= 1 % Dive is over, but not enough half variables to do anything s
             Qprob(nq,3)=nfix1+1;
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix1(nfix1+1)=branchvar_one;
             Qfix1(nq,:)=vfix1;
@@ -155,7 +155,7 @@ else vfix0old=vfix0; % save for re-use
         Qprob(nq,3)=nfix1+nhalf0; % all half0 variables fixed at 1
         Qprob(nq,4)=depth+1;
         Qprob(nq,5)=complement;
-        Qprob(nq,6)=newgamma;
+        Qprob(nq,6-1+n)=newGamma;
         %
         if nhalf1 > 0
             vfix0(nfix0+1:nfix0+nhalf1)=vhalf1(1:nhalf1);
@@ -178,7 +178,7 @@ else vfix0old=vfix0; % save for re-use
             Qprob(nq,3)=nfix1+nhalf0-1; % all other half0 variables fixed at 1
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix0(nfix0+1)=vhalf0(i);
             if nhalf1 > 0
@@ -204,7 +204,7 @@ else vfix0old=vfix0; % save for re-use
             Qprob(nq,3)=nfix1+nhalf0+1; % all half0 variables fixed at 1
             Qprob(nq,4)=depth+1;
             Qprob(nq,5)=complement;
-            Qprob(nq,6)=newgamma;
+            Qprob(nq,6-1+n)=newGamma;
             %
             vfix1(nfix1+1)=vhalf1(i);
             if nhalf0 > 0

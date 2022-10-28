@@ -1,6 +1,6 @@
 % Clear fathomed node from queue
 %
-Qprob(nq,:)=zeros(1,6);
+Qprob(nq,:)=zeros(1,6-1+n);
 Qfix0(nq,:)=zeros(1,n-s);
 Qfix1(nq,:)=zeros(1,s);
 %

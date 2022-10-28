@@ -28,8 +28,8 @@ else
     logdetC=log(prod(lam));  
     Cinv=U*diag(1./lam)*U';
     %
-    [xind,heurval]=heur(C,n,s);        % HEURSITIC ON ORIGINAL
-    [cxind,cheurval]=heur(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
+    [xind,heurval]=heur1(C,n,s);        % HEURSITIC ON ORIGINAL
+    [cxind,cheurval]=heur1(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
     if cheurval+logdetC > heurval      % PICK THE BEST
       xind=setdiff(transpose(1:n),cxind(1:n-s));
       heurval=cheurval+logdetC;
@@ -51,8 +51,9 @@ else
     fathomval=bestval+fathomtol; % adjust fathoming criterion using tolerance
     fixval=bestval+fixtol;
     bestvars=zeros(1,s);   % indeces of variables for bestval
-    %
-    Qprob=zeros(500,6);    % problem queue: Parent Bound,nfix0,nfix1,depth,orig/comp,newgamma
+
+    Qprob=zeros(500,6-1+n);    % problem queue: Parent Bound,nfix0,nfix1,depth,orig/comp,newgamma
+    % Todo, the problem queue may overflow
     Qprob(1,1)=10000;      % prevent fathoming based on parent bound
     Qprob(1,5)=complement; % type of bound
     Qfix0=zeros(500,n-s);  % variables fixed to zero in problem queue
@@ -102,11 +103,20 @@ nscale0=5;    % max number on initial bound evaluation
 nrounds=0;    % number of rounds adding inequalities (not used by linx)
 Maxadd=2000;  % max number of inequalities per round (not used by linx)
 printsol=0;   % print solver results
-gamma=0;      % initial gamma value
+Gamma=0;      % initial gamma value
 power=1.5;    % power for initial gamma computation
 maxfactor=5;  % max factor change for gamma on one update
 %                  
-control=[nscale, nscale0, nrounds, Maxadd, printsol, gamma, power, maxfactor];
+% control=[nscale, nscale0, nrounds, Maxadd, printsol, gamma, power, maxfactor];
+control=struct;
+control.nscale = nscale;
+control.nscale0 = nscale0;
+control.nrounds = nrounds;
+control.Maxadd = Maxadd;
+control.printsol = printsol;
+control.Gamma = Gamma;
+control.power = power;
+control.maxfactor = maxfactor;
 %
 while nq > 0              % queue is not empty
     elapsedtime=toc;
@@ -133,7 +143,7 @@ while nq > 0              % queue is not empty
     nfix1=Qprob(nq,3);      % number of variables fixed to one
     depth=Qprob(nq,4);      % depth in B&B tree
     complement=Qprob(nq,5); % original or complimentary problem for parent bound
-    gamma=Qprob(nq,6);      % final adjusted gamma from parent problem
+    Gamma=Qprob(nq,6:end);      % final adjusted gamma from parent problem
     %
     Ndepth(depth+1) = Ndepth(depth+1)+1; % note root is at depth 0
     % 
@@ -185,7 +195,7 @@ while nq > 0              % queue is not empty
     logdetCnode=log(prod(lam));  
     Cnodeinv=U*diag(1./lam)*U';     % Compute inverse for use in complementary bound
     %
-    control(6)=gamma;               % use final adjusted gamma from parent problem
+    control.Gamma=Gamma;               % use final adjusted gamma from parent problem
     if complement                   % apply bound to complement of node problem
         [results,xval,delta_one,delta_zero]=eval(strcat(solver,'(Cnodeinv,nnode-snode,control)')); % note deltas switched  
         nodeconstant=fixconstant+logdetCnode;
@@ -195,12 +205,12 @@ while nq > 0              % queue is not empty
         nodeconstant=fixconstant;
     end
     %
-    bound=results(1)+nodeconstant;  % record outputs from bound computation
-    code=results(2);
-    solvetime=solvetime+results(3);
-    newgamma=results(4);
-    kscale=results(5);
-    scalerror=results(6);
+    bound=results.bound+nodeconstant;  % record outputs from bound computation
+    code=results.code;
+    solvetime=solvetime+results.time;
+    newGamma=results.newGamma;
+    kscale=results.kscale;
+    scalerror=results.scalerror;
     %
     if code < 0                     % solver solution code
         Ncodeneg=Ncodeneg+1;
