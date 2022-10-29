@@ -1,4 +1,4 @@
-function [xind,val] = localstep(c,xind)
+function [xind,val] = localstep1(c,xind)
 n=size(c,1);
 s=size(xind);
 compind=setdiff(transpose(1:n),xind);

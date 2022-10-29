@@ -1,6 +1,6 @@
-function [xind,heurval]=heur(c,n,s)
+function [xind,heurval]=heur1(c,n,s)
   % CALCULATE A CONTINUOUS SOLUTION
-  contsol=gencontsol(c,s);
+  contsol=gencontsol1(c,s);
   sum(contsol);
   % 
   % GREEDILY FIND A DISCRETE SOLUTION BASED ON THE CONTINUOUS ONE
@@ -12,14 +12,14 @@ function [xind,heurval]=heur(c,n,s)
   % initheurval=log(det(c(xind,xind)))  % initial value for heuristic
   %
   % RUN 2-OPT
-  [xind,heurval]=localstep(c,xind);    
+  [xind,heurval]=localstep1(c,xind);    
   %heurval                             % value after 2-opt
 
   % DO THE GREEDY ALGOITHM
-  [indg,heurvalg]=greedy(c,n,s);
+  [indg,heurvalg]=greedy1(c,n,s);
   %heurvalg
   % RUN 2-OPT
-  [indg,heurvalg]=localstep(c,indg);    
+  [indg,heurvalg]=localstep1(c,indg);    
   %heurvalg                           % value after 2-opt
 
 % CHOOSE THE BETTER OF THESE TWO HEURISTICS

@@ -1,4 +1,4 @@
-function [contsol] = gencontsol(c,s)
+function [contsol] = gencontsol1(c,s)
 [v,e]=eig(c);
 w=[diag(e),transpose(v)];
 sw=sortrows(w,[1]);

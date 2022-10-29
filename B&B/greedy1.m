@@ -1,4 +1,4 @@
-function [ind,val] = greedy(c,n,s)
+function [ind,val] = greedy1(c,n,s)
 [a,b]=max(diag(c));
 ind=b;
 compind=setdiff(transpose(1:n),ind);
