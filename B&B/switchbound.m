@@ -2,7 +2,7 @@
 % gives better value.  If so update bound and switch value of "complement"
 %
 complement = ~complement;                       % switch
-control(6)=0;                                   % re-initialize gamma value
+control.Gamma=0;                                   % re-initialize gamma value
 if complement                                   % apply bound to complement of node problem
     [results2,xval2,delta_one2,delta_zero2]=eval(strcat(solver,'(Cnodeinv,nnode-snode,control)')); % note deltas switched            
     nodeconstant2=fixconstant+logdetCnode;
@@ -37,6 +37,8 @@ elseif bound2 < bound;      % switch to results from better bound
     delta_zero=delta_zero2;
     delta_one=delta_one2;
     xval=xval2;
-    newgamma=results(4);
+    newGamma=results.newGamma;
+    newGammafull = ones(1,n);
+    newGammafull(vars) = newGamma; % supplement newGamma to of length n for inheritance
 else complement = ~complement; % go back - no reason to switch
 end

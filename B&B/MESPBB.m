@@ -117,7 +117,7 @@ control.printsol = printsol;
 control.Gamma = Gamma;
 control.power = power;
 control.maxfactor = maxfactor;
-%
+
 while nq > 0              % queue is not empty
     elapsedtime=toc;
     if elapsedtime > 1800 % interval for checkpointing
@@ -143,7 +143,6 @@ while nq > 0              % queue is not empty
     nfix1=Qprob(nq,3);      % number of variables fixed to one
     depth=Qprob(nq,4);      % depth in B&B tree
     complement=Qprob(nq,5); % original or complimentary problem for parent bound
-    Gamma=Qprob(nq,6:end);      % final adjusted gamma from parent problem
     %
     Ndepth(depth+1) = Ndepth(depth+1)+1; % note root is at depth 0
     % 
@@ -194,7 +193,9 @@ while nq > 0              % queue is not empty
     lam=diag(D);
     logdetCnode=log(prod(lam));  
     Cnodeinv=U*diag(1./lam)*U';     % Compute inverse for use in complementary bound
-    %
+    % take Gamma according to vars
+    Gammaind = vars+5;
+    Gamma=Qprob(nq,Gammaind);      % final adjusted gamma from parent problem
     control.Gamma=Gamma;               % use final adjusted gamma from parent problem
     if complement                   % apply bound to complement of node problem
         [results,xval,delta_one,delta_zero]=eval(strcat(solver,'(Cnodeinv,nnode-snode,control)')); % note deltas switched  
@@ -209,6 +210,8 @@ while nq > 0              % queue is not empty
     code=results.code;
     solvetime=solvetime+results.time;
     newGamma=results.newGamma;
+    newGammafull = ones(1,n);
+    newGammafull(vars) = newGamma; % supplement newGamma to of length n for inheritance
     kscale=results.kscale;
     scalerror=results.scalerror;
     %

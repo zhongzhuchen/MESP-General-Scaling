@@ -19,7 +19,7 @@ nscale0 = control.nscale0;
 nrounds = control.nrounds; % not used by linx 
 Maxadd = control.Maxadd; % not used by linx 
 printsol = control.printsol;
-Gamma = control.Gamma;
+Gamma = (control.Gamma)';
 power = control.power;
 maxfactor = control.maxfactor;
 
@@ -47,7 +47,7 @@ for kscale=1:nscale
     constraints=[x >= zeros(n,1), x <= ones(n,1), sum(x)==s];
     scaleC = diag(Gamma)*C;
     A = scaleC*diag(x)*scaleC;
-    obj1=logdet(.5*(A+A')+eye(n)-diag(x))-x'*log(Gamma); % force symmetry
+    obj1=0.5*(logdet(.5*(A+A')+eye(n)-diag(x)))-sum(x.*log(Gamma)); % force symmetry
     options=sdpsettings('solver','sdpt3','sdpt3.maxit',75,'sdpt3.gaptol',1E-7,'sdpt3.inftol',1E-7,'verbose',0,'cachesolvers',1);
     solvetime=tic;
     diagnostics=optimize(constraints,-obj1,options);    
@@ -55,7 +55,7 @@ for kscale=1:nscale
     code=diagnostics.problem;
     %  
     xval=value(x);
-    AUX=scaleC*diag(xval)*scaleC;
+    AUX=scaleC*diag(xval)*scaleC';
     F=AUX+eye(n)-diag(xval);
     F=(F+F')/2; % force symmetry
 %     bound=.5*(logdet(F)-s*log(gamma)); % Note factor .5: bound is for 2*ldet C_FF
@@ -64,7 +64,7 @@ for kscale=1:nscale
     [U,D]=eig(F);
     lam=diag(D);
     Finv=U*diag(1./lam)*U';
-    scaleval=norm(diag(Finv)'*(ones(n,1)-xval)-(ones(n,1)-xval)); % want scaleval = 0
+    scaleval=norm(diag(Finv*AUX)-xval); % want scaleval = 0
     if printsol; fprintf('\n code=%g, bound=%g', code,bound); end
     if printsol; fprintf('\n gamma = %g, n-s= %g, scaleval = %g',Gamma, n-s, scaleval); end
     newGamma=Gamma;
@@ -76,7 +76,7 @@ for kscale=1:nscale
 %     newgamma=max(newgamma,gamma/maxfactor);
     %
     linx_Gamma_update;
-    if scalerror <.25; break; end % good enough for current bound
+    if scalerror <.5; break; end % good enough for current bound
 end
 %
 delta_one=-.5*dual(constraints(1));  % change sign and correct for factor 2 in objective
@@ -108,7 +108,7 @@ results = struct;
 results.bound=bound;
 results.code=code;
 results.time=time;
-results.newGamma=newGamma;
+results.newGamma=newGamma';
 results.kscale=kscale;
 results.scalerror=scalerror;
 
