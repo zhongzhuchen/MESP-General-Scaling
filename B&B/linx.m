@@ -61,8 +61,8 @@ for kscale=1:nscale
     if scalerror <.25; break; end % good enough for current bound
 end
 %
-delta_one=-.5*dual(constraints(1));  % change sign and correct for factor 2 in objective
-delta_zero=-.5*dual(constraints(2)); %
+delta_one=-dual(constraints(1));  % change sign and correct for factor 2 in objective
+delta_zero=-dual(constraints(2)); %
 %
 evaluate_dual=0; % to evaluate dual bound
 %

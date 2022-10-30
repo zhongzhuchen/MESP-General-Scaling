@@ -28,8 +28,10 @@ else
     logdetC=log(prod(lam));  
     Cinv=U*diag(1./lam)*U';
     %
-    [xind,heurval]=heur1(C,n,s);        % HEURSITIC ON ORIGINAL
-    [cxind,cheurval]=heur1(Cinv,n,n-s); % HEURISTIC ON COMPLEMENT
+    A = double.empty(0,n);
+    b = double.empty(0,1);
+    [xind,heurval]=heur(C,s,A,b);        % HEURSITIC ON ORIGINAL
+    [cxind,cheurval]=heur(Cinv,n-s,A,b); % HEURISTIC ON COMPLEMENT
     if cheurval+logdetC > heurval      % PICK THE BEST
       xind=setdiff(transpose(1:n),cxind(1:n-s));
       heurval=cheurval+logdetC;
@@ -49,7 +51,7 @@ else
     %    
     bestval=heurval+besttol;
     fathomval=bestval+fathomtol; % adjust fathoming criterion using tolerance
-    fixval=bestval+fixtol;
+    fixval=heurval+fixtol-1e-6;
     bestvars=zeros(1,s);   % indeces of variables for bestval
     %
     Qprob=zeros(500,6);    % problem queue: Parent Bound,nfix0,nfix1,depth,orig/comp,newgamma
