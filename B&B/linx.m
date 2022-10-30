@@ -15,9 +15,10 @@ power=control(7);
 maxfactor=control(8);
 %    
 if gamma==0
-    csort=sort(diag(C),'descend');
-    gamma=1/csort(s); % initial scale factor if none provided
-    gamma=gamma^power;
+    A = double.empty(0,n);
+    b = double.empty(0,1); 
+    MESPInstance = MESP(C,A,b);
+    [gamma,info_Linxg1]= MESPInstance.Newton_Linx_gamma(s, 500);
     nscale=nscale0;
 end
 %
