@@ -3,11 +3,11 @@
 % to find optimal solution earlier. Checkpoints results to allow restart.
 % Tolerances for fathoming and fixing variables can be increased to 
 % positive values after first checkpoint.
-%
+
 clear all;
 %
 restart = 0;    % 1 if restarting from checkpoint
-tic; % start timer
+start = tic; % start timer
 %                             
 if restart      % restart from checkpoint file
     load('checkpoint1.mat');
@@ -20,7 +20,7 @@ else
 %     [C,count] = fscanf(fid,'%f',[n,n]);
 %     fclose(fid);
     %
-    s=30;
+    s=16;
     complement=0;       % initial setting for bound (original or complement)
     %
     [U,D]=eig(C);
@@ -251,5 +251,5 @@ while nq > 0              % queue is not empty
 end
 %
 time=time+toc;
-fprintf('\n Nnodes=%g, Overall time=%g, Solver time=%g, Bestval=%g\n', Nnodes, time, solvetime, bestval);
+fprintf('\n Nnodes=%g, Overall time=%g, Solver time=%g, Bestval=%g\n', Nnodes, toc(start), solvetime, bestval);
     
