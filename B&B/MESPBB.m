@@ -14,13 +14,15 @@ if restart      % restart from checkpoint file
 else         
     %      ******* problem initialization ********
     load('data124.mat');
+    load('Csub.mat');
+    C=Csub;
     n=length(C);
 %     fid = fopen('DATA63','r');
 %     %
 %     [C,count] = fscanf(fid,'%f',[n,n]);
 %     fclose(fid);
     %
-    s=16;
+    s=46;
     complement=0;       % initial setting for bound (original or complement)
     %
     [U,D]=eig(C);

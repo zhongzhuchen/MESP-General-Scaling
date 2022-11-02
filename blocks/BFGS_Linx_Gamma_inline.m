@@ -8,8 +8,8 @@ n = obj.size;
 t1=tic;
 
 if n>200
-    TOL= 10^(-6);
-    Numiterations=20; 
+    TOL= 10^(-10);
+    Numiterations=200; 
 else
     TOL= 10^(-10);
     Numiterations=200; 
