@@ -62,3 +62,8 @@ for i=1:n
         info.fixto1list(end+1)=i;
     end
 end
+
+
+
+
+
