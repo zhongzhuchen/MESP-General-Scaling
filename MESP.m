@@ -181,6 +181,23 @@ classdef MESP
         Knitro_Linx_inline;
         end
 
+        function [fval,x,info] = Knitro_Linx_heavy(obj,x0,s,Gamma)
+        % calling knitro to solve the Linx problem but fix variables during
+        % iteration
+        %{
+        Input:
+        s       - e'x=s
+        x0      - initial point
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C
+
+        Output:
+        fval    - optimal value
+        x       - optimal solution
+        info    - struct containing necesssary information
+        %}
+        Knitro_Linx_heavy_inline;
+        end
+
         function [optgamma,info]= Newton_Linx_gamma(obj,s, timelimit)
         % Newton method for optimizaing scaling parameter 
         % of Linx objective function 

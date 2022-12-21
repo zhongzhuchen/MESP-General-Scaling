@@ -4,10 +4,11 @@ n=obj.size;
 A_data=obj.A;
 b_data=obj.b;
 [m,~] = size(obj.A);
+LB = obj.obtain_lb(s);
 info = struct;
 
 %% calling knitro
-[knitro_fval,x,ininfo] = Knitro_Linx_light(x0,C,s,A_data,b_data,Gamma);
+[knitro_fval,x,ininfo] = Knitro_Linx_heavy(x0,C,s,A_data,b_data,Gamma, LB);
 
 %% assign values to info
 % record important information
@@ -34,17 +35,10 @@ info.firstorderopt=ininfo.output.firstorderopt;
 info.constrviolation=ininfo.output.constrviolation;
 info.algorithm=ininfo.output.algorithm;
 
-%% fixing variables by the fixing logic in the factorization paper by Chen etal.
-info.fixnum=0;
-info.fixnum_to0=0;
-info.fixto0list=[];
-info.fixnum_to1=0;
-info.fixto1list=[];
-
-% if the integrality gap between the upper bound and the lower bound is
-% large, the fixing power might be hidden due the weak lower bound
+%%
+fixto0list = ininfo.fixto0list;
+fixto1list = ininfo.fixto1list;
 info.integrality_gap=info.dualbound-obj.obtain_lb(s);
-
 if info.integrality_gap>1e-6
     info.solved=0;
 else
@@ -52,22 +46,15 @@ else
 end
 for i=1:n
     if info.integrality_gap<info.dual_upsilon(i)-1e-10 % fix to zero
-        info.fixnum=info.fixnum+1;
-        info.fixnum_to0=info.fixnum_to0+1;
-        info.fixto0list(end+1)=i;
+        fixto0list(end+1)=i;
     elseif info.integrality_gap<info.dual_nu(i)-1e-10 % fix to one
-        info.fixnum=info.fixnum+1;
-        info.fixnum_to1=info.fixnum_to1+1;
-        info.fixto1list(end+1)=i;
+        fixto1list(end+1)=i;
     end
 end
 
-% info.fixto0array = zeros(n,1);
-% info.fixto0array(info.fixto0list) = 1;
-% info.fixto1array = zeros(n,1);
-% info.fixto1array(info.fixto1list) = 1;
-
-% implement conflict matrices here (not the most efficient way):
+fixto0list = unique(fixto0list);
+fixto1list = unique(fixto1list);
+%% implement conflict matrices here (not the most efficient way):
 %{
 We store four n-by-n matrices here, where if the (i,j) element of:
 1. the 1st matrix is one, then x_i and x_j cannot be one/ one simultaneously
@@ -81,21 +68,27 @@ A01 = (info.integrality_gap < info.dual_nu + info.dual_upsilon' -1e-10);
 A00 = (info.integrality_gap < info.dual_nu + info.dual_nu' -1e-10);
 
 % leverage the above conflict matrices to induce more variable fixing
-fixto0list = info.fixto0list;
-fixto1list = info.fixto1list;
 while true
     oldlength0 = length(fixto0list);
     oldlength1 = length(fixto1list);
     % fix more variables to 0
-    A11sub_colsum = sum(A11(:, fixto1list), 2) > 0;
-    fixto0list = union(fixto0list, find(A11sub_colsum));
-    A10sub_colsum = sum(A10(:, fixto0list), 2) > 0;
-    fixto0list = union(fixto0list, find(A10sub_colsum));
+    if oldlength1 > 0
+        A11sub_colsum = sum(A11(:, fixto1list), 2) > 0;
+        fixto0list = union(fixto0list, find(A11sub_colsum));
+    end
+    if oldlength0 > 0
+        A10sub_colsum = sum(A10(:, fixto0list), 2) > 0;
+        fixto0list = union(fixto0list, find(A10sub_colsum));
+    end
     % fix more variables to 0
-    A01sub_colsum = sum(A01(:, fixto1list), 2) > 0;
-    fixto1list = union(fixto1list, find(A01sub_colsum));
-    A00sub_colsum = sum(A00(:, fixto0list), 2) > 0;
-    fixto1list = union(fixto1list, find(A00sub_colsum));
+    if oldlength1 > 0
+        A01sub_colsum = sum(A01(:, fixto1list), 2) > 0;
+        fixto1list = union(fixto1list, find(A01sub_colsum));
+    end
+    if oldlength0 > 0
+        A00sub_colsum = sum(A00(:, fixto0list), 2) > 0;
+        fixto1list = union(fixto1list, find(A00sub_colsum));
+    end
     if oldlength0 == length(fixto0list) && oldlength1 == length(fixto1list)
         break;
     end
