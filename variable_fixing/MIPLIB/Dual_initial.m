@@ -1,0 +1,52 @@
+function [info] = Dual_initial(problem, margin)
+%{
+This function is for finding an initial dual feasible slution
+for interior point method to start at that we are sure it can 
+have dual feasibility all the time.
+
+In particular, we solve the following quadratic programming problem:
+
+min  norm(upsilon,2)^2 + norm(nu,2)^2
+s.t. f + Aeq'*tau + A'*pi - upsilon + nu = 0
+     pi, upsilon, nu >= 0
+%}
+f = problem.f;
+A = problem.Aineq;
+b = problem.bineq;
+Aeq = problem.Aeq;
+beq = problem.beq;
+lb = problem.lb;
+ub = problem.ub;
+intcon = problem.intcon;
+
+if nargin < 2
+    margin = 1e-3;
+end
+% calling qps_gurobi
+n = length(f);
+[m1,~] = size(A);
+[m2,~] = size(Aeq);
+H = sparse(blkdiag(zeros(m1),zeros(m2),eye(2*n)));
+c = sparse(zeros(m1+m2+2*n,1));
+AQ = sparse([A', Aeq', -eye(n), eye(n)]);
+l = -f;
+u = -f;
+xmin = [margin*ones(m1,1); -Inf*ones(m2,1); margin*ones(2*n,1)];
+xmax = Inf*ones(m1+m2+2*n,1);
+
+TStart=tic;
+tStart=cputime;
+[x,f,eflag,output,lambda]=qps_gurobi(H,c, AQ, l,u, xmin,xmax);
+time=toc(TStart);
+tEnd=cputime-tStart;
+
+% obtain solution
+info.pi = x(1:m1);
+info.tau = x((m1+1):(m1+m2));
+info.upsilon = x((m1+m2+1):(m1+m2+n));
+info.nu = x((m1+m2+n+1):(m1+m2+2*n));
+info.eflag = eflag;
+info.time=time;
+info.cputime = tEnd;
+end
+

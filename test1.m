@@ -1,17 +1,20 @@
 % load('data63.mat');
+% % iterative_fixing_O;
 % iterative_fixing_G;
 % load('data90.mat');
+% % iterative_fixing_O;
 % iterative_fixing_G;
 % load('data124.mat');
+% % iterative_fixing_O;
 % iterative_fixing_G;
 
 %==========================================================================
-% load('data63.mat');
-% Linx_iterative_fixing_O;
-% load('data90.mat');
-% Linx_iterative_fixing_O;
-% load('data124.mat');
-% Linx_iterative_fixing_O;
+load('data63.mat');
+Linx_iterative_fixing_O;
+load('data90.mat');
+Linx_iterative_fixing_O;
+load('data124.mat');
+Linx_iterative_fixing_O;
 
 %==========================================================================
 % % solved_instance = struct;
@@ -55,9 +58,3 @@
 % %     fixnums.gscaling_124 = fixnum;
 % %     [c,~] = ismember(fixalllist1,fixalllist2)
 % end
-
-B = [-1, -1; -1, -1;-1,0];
-C = [diag([2,2,1]), B; B', diag([3,2])];
-
-MESPInstance = MESP(C, A, b);
-

@@ -54,48 +54,49 @@ end
 
 fixto0list = unique(fixto0list);
 fixto1list = unique(fixto1list);
-%% implement conflict matrices here (not the most efficient way):
-%{
-We store four n-by-n matrices here, where if the (i,j) element of:
-1. the 1st matrix is one, then x_i and x_j cannot be one/ one simultaneously
-2. the 2nd matrix is one, then x_i and x_j cannot be one/ zero simultaneously
-3. the 3rd matrix is one, then x_i and x_j cannot be zero/ one simultaneously
-4. the 4th matrix is one, then x_i and x_j cannot be zero/ zero simultaneously
-%}
-A11 = (info.integrality_gap < info.dual_upsilon + info.dual_upsilon' -1e-10);
-A10 = (info.integrality_gap < info.dual_upsilon + info.dual_nu' -1e-10);
-A01 = (info.integrality_gap < info.dual_nu + info.dual_upsilon' -1e-10);
-A00 = (info.integrality_gap < info.dual_nu + info.dual_nu' -1e-10);
 
-% leverage the above conflict matrices to induce more variable fixing
-while true
-    oldlength0 = length(fixto0list);
-    oldlength1 = length(fixto1list);
-    % fix more variables to 0
-    if oldlength1 > 0
-        A11sub_colsum = sum(A11(:, fixto1list), 2) > 0;
-        fixto0list = union(fixto0list, find(A11sub_colsum));
-    end
-    if oldlength0 > 0
-        A10sub_colsum = sum(A10(:, fixto0list), 2) > 0;
-        fixto0list = union(fixto0list, find(A10sub_colsum));
-    end
-    % fix more variables to 0
-    if oldlength1 > 0
-        A01sub_colsum = sum(A01(:, fixto1list), 2) > 0;
-        fixto1list = union(fixto1list, find(A01sub_colsum));
-    end
-    if oldlength0 > 0
-        A00sub_colsum = sum(A00(:, fixto0list), 2) > 0;
-        fixto1list = union(fixto1list, find(A00sub_colsum));
-    end
-    if oldlength0 == length(fixto0list) && oldlength1 == length(fixto1list)
-        break;
-    end
-end
-
-fixto0list = unique(fixto0list);
-fixto1list = unique(fixto1list);
+% %% implement conflict matrices here (not the most efficient way):
+% %{
+% We store four n-by-n matrices here, where if the (i,j) element of:
+% 1. the 1st matrix is one, then x_i and x_j cannot be one/ one simultaneously
+% 2. the 2nd matrix is one, then x_i and x_j cannot be one/ zero simultaneously
+% 3. the 3rd matrix is one, then x_i and x_j cannot be zero/ one simultaneously
+% 4. the 4th matrix is one, then x_i and x_j cannot be zero/ zero simultaneously
+% %}
+% A11 = (info.integrality_gap < info.dual_upsilon + info.dual_upsilon' -1e-10);
+% A10 = (info.integrality_gap < info.dual_upsilon + info.dual_nu' -1e-10);
+% A01 = (info.integrality_gap < info.dual_nu + info.dual_upsilon' -1e-10);
+% A00 = (info.integrality_gap < info.dual_nu + info.dual_nu' -1e-10);
+% 
+% % leverage the above conflict matrices to induce more variable fixing
+% while true
+%     oldlength0 = length(fixto0list);
+%     oldlength1 = length(fixto1list);
+%     % fix more variables to 0
+%     if oldlength1 > 0
+%         A11sub_colsum = sum(A11(:, fixto1list), 2) > 0;
+%         fixto0list = union(fixto0list, find(A11sub_colsum));
+%     end
+%     if oldlength0 > 0
+%         A10sub_colsum = sum(A10(:, fixto0list), 2) > 0;
+%         fixto0list = union(fixto0list, find(A10sub_colsum));
+%     end
+%     % fix more variables to 0
+%     if oldlength1 > 0
+%         A01sub_colsum = sum(A01(:, fixto1list), 2) > 0;
+%         fixto1list = union(fixto1list, find(A01sub_colsum));
+%     end
+%     if oldlength0 > 0
+%         A00sub_colsum = sum(A00(:, fixto0list), 2) > 0;
+%         fixto1list = union(fixto1list, find(A00sub_colsum));
+%     end
+%     if oldlength0 == length(fixto0list) && oldlength1 == length(fixto1list)
+%         break;
+%     end
+% end
+% 
+% fixto0list = unique(fixto0list);
+% fixto1list = unique(fixto1list);
 
 info.fix1num = length(fixto1list);
 info.fixto1list = fixto1list;

@@ -1,0 +1,336 @@
+load('data124.mat');
+n = length(C);
+%% open parameter
+maxfixon = 0;
+multifix_threshold0 = 0.05;
+multifix_threshold1 = 0.95;
+% A = double.empty(0,n);
+% b = double.empty(0,1);
+load('linconstr124.mat')
+MESPEX1 = MESP(C, A, b);
+exceloutput=[];
+folder = 'variable_fixing/results_constr';
+ubname = 'linx';
+
+baseFileName = strcat(ubname, '_data',int2str(n),'.xlsx');
+fullFileNameexcel = fullfile(folder, baseFileName);
+if exist(fullFileNameexcel, 'file')==2
+    delete(fullFileNameexcel);
+end
+
+if maxfixon == 0
+    info1.fix0num = nan;
+    info1.fix1num = nan;
+    info1.fixnum = nan;
+end
+
+% collect the variables fixed for each s
+info_fixconflict = struct;
+info_heavyfix = struct;
+info_maxfix = struct;
+info_maxfixlin = struct;
+info_fix = struct;
+
+if ubname == 'linx'
+    for s=11:110
+        sprintf("s = %d", s)
+        suboutput = [n, s];
+        LB = MESPEX1.obtain_lb(s);
+        [fval,x,info] = MESPEX1.Knitro_Linx(s/n*ones(n,1),s,ones(n,1));
+        [fval,x,info0] = MESPEX1.Knitro_Linx_heavy(s/n*ones(n,1),s,ones(n,1));
+        % no-scaling
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        
+        % multifix
+        I = [];
+        J = [];
+        for i=1:n
+            if info.x(i) < multifix_threshold0
+                I(end+1) = i;
+            end
+            if info.x(i) > multifix_threshold0
+                J(end+1) = i;
+            end
+        end
+        [fix0vec, fix1vec, info4] = multifix(ubname, C, s, A, b, I, J, s/n*ones(n,1), ones(n,1), LB);
+
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info0.fix0num, info1.fix0num, info2.fix0num, info3.fix0num, info4.fix0num,...
+            info.fix1num, info0.fix1num, info1.fix1num, info2.fix1num, info3.fix1num, info4.fix1num...
+            info.fixnum, info0.fixnum, info1.fixnum, info2.fixnum, info3.fixnum, info4.fixnum];
+
+        fieldname0 = strcat('no_0_', num2str(s));
+        fieldname1 = strcat('no_1_', num2str(s));
+        info_fixconflict.(fieldname0) = info.fixto0list;
+        info_fixconflict.(fieldname1) = info.fixto1list;
+
+        info_heavyfix.(fieldname0) = info0.fixto0list;
+        info_heavyfix.(fieldname1) = info0.fixto1list;
+
+        info_maxfix.(fieldname0) = info1.fixto0list;
+        info_maxfix.(fieldname1) = info1.fixto1list;
+
+        info_maxfixlin.(fieldname0) = info2.fixto0list;
+        info_maxfixlin.(fieldname1) = info2.fixto1list;
+
+        info_fix.(fieldname0) = info3.fixto0list;
+        info_fix.(fieldname1) = info3.fixto1list;
+
+        % o-scaling
+        [optgamma,info]= MESPEX1.Newton_Linx_gamma(s, 300);
+        [fval,x,info] = MESPEX1.Knitro_Linx(s/n*ones(n,1),s,sqrt(optgamma)*ones(n,1));
+        [fval,x,info0] = MESPEX1.Knitro_Linx_heavy(s/n*ones(n,1),s,sqrt(optgamma)*ones(n,1));
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1), LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname, 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1), LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1), LB);
+        
+        % multifix
+        I = [];
+        J = [];
+        for i=1:n
+            if info.x(i) < multifix_threshold0
+                I(end+1) = i;
+            end
+            if info.x(i) > multifix_threshold0
+                J(end+1) = i;
+            end
+        end
+        [fix0vec, fix1vec, info4] = multifix(ubname, C, s, A, b, I, J, s/n*ones(n,1), sqrt(optgamma)*ones(n,1), LB);
+
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info0.fix0num, info1.fix0num, info2.fix0num, info3.fix0num, info4.fix0num,...
+            info.fix1num, info0.fix1num, info1.fix1num, info2.fix1num, info3.fix1num, info4.fix1num...
+            info.fixnum, info0.fixnum, info1.fixnum, info2.fixnum, info3.fixnum, info4.fixnum];
+        
+        fieldname0 = strcat('o_0_', num2str(s));
+        fieldname1 = strcat('o_1_', num2str(s));
+        info_fixconflict.(fieldname0) = info.fixto0list;
+        info_fixconflict.(fieldname1) = info.fixto1list;
+
+        info_heavyfix.(fieldname0) = info0.fixto0list;
+        info_heavyfix.(fieldname1) = info0.fixto1list;
+
+        info_maxfix.(fieldname0) = info1.fixto0list;
+        info_maxfix.(fieldname1) = info1.fixto1list;
+
+        info_maxfixlin.(fieldname0) = info2.fixto0list;
+        info_maxfixlin.(fieldname1) = info2.fixto1list;
+
+        info_fix.(fieldname0) = info3.fixto0list;
+        info_fix.(fieldname1) = info3.fixto1list;
+
+        % g-scaling
+        [optGamma,info]= MESPEX1.BFGS_Linx_Gamma(s, sqrt(optgamma)*ones(n,1), 300);
+        [fval,x,info] = MESPEX1.Knitro_Linx(s/n*ones(n,1),s,optGamma);
+        [fval,x,info0] = MESPEX1.Knitro_Linx_heavy(s/n*ones(n,1),s,optGamma);
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        
+        % multifix
+        I = [];
+        J = [];
+        for i=1:n
+            if info.x(i) < multifix_threshold0
+                I(end+1) = i;
+            end
+            if info.x(i) > multifix_threshold0
+                J(end+1) = i;
+            end
+        end
+        [fix0vec, fix1vec, info4] = multifix(ubname, C, s, A, b, I, J, s/n*ones(n,1), optGamma, LB);
+
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info0.fix0num, info1.fix0num, info2.fix0num, info3.fix0num, info4.fix0num,...
+            info.fix1num, info0.fix1num, info1.fix1num, info2.fix1num, info3.fix1num, info4.fix1num...
+            info.fixnum, info0.fixnum, info1.fixnum, info2.fixnum, info3.fixnum, info4.fixnum];
+
+        fieldname0 = strcat('g_0_', num2str(s));
+        fieldname1 = strcat('g_1_', num2str(s));
+        info_fixconflict.(fieldname0) = info.fixto0list;
+        info_fixconflict.(fieldname1) = info.fixto1list;
+
+        info_heavyfix.(fieldname0) = info0.fixto0list;
+        info_heavyfix.(fieldname1) = info0.fixto1list;
+
+        info_maxfix.(fieldname0) = info1.fixto0list;
+        info_maxfix.(fieldname1) = info1.fixto1list;
+
+        info_maxfixlin.(fieldname0) = info2.fixto0list;
+        info_maxfixlin.(fieldname1) = info2.fixto1list;
+
+        info_fix.(fieldname0) = info3.fixto0list;
+        info_fix.(fieldname1) = info3.fixto1list;
+
+        exceloutput(end+1,:) = suboutput;
+    end
+    title=["n", "s",...
+        'no-scale solve', ...
+        'no-scale CG 0', 'no-scale heavyfix 0', 'no-scale maxfix 0', 'no-scale maxfixlin 0', 'no-scale singlefix 0', 'no-scale multifix 0',...
+        'no-scale CG 1', 'no-scale heavyfix 1', 'no-scale maxfix 1', 'no-scale maxfixlin 1', 'no-scale singlefix 1', 'no-scale multifix 1',...
+        'no-scale CG all', 'no-scale heavyfix all', 'no-scale maxfix all', 'no-scale maxfixlin all', 'no-scale singlefix all', 'no-scale multifix all',...
+        'o-scale solve',...
+        'o-scale CG 0', 'o-scale heavyfix 0', 'o-scale maxfix 0', 'o-scale maxfixlin 0', 'o-scale singlefix 0', 'o-scale multifix 0',...
+        'o-scale CG 1', 'o-scale heavyfix 1', 'o-scale maxfix 1', 'o-scale maxfixlin 1', 'o-scale singlefix 1', 'o-scale multifix 1',...
+        'o-scale CG all', 'o-scale heavyfix all','o-scale maxfix all', 'o-scale maxfixlin all', 'o-scale singlefix all', 'o-scale multifix all',...
+        'g-scale solve',...
+        'g-scale CG 0', 'g-scale heavyfix 0', 'g-scale maxfix 0', 'g-scale maxfixlin 0', 'g-scale singlefix 0', 'g-scale multifix 0',...
+        'g-scale CG 1', 'g-scale heavyfix 1', 'g-scale maxfix 1', 'g-scale maxfixlin 1', 'g-scale singlefix 1', 'g-scale multifix 1',...
+        'g-scale CG all', 'g-scale heavyfix all', 'g-scale maxfix all', 'g-scale maxfixlin all', 'g-scale singlefix all','g-scale multifix all',];
+elseif strcmp(ubname, 'Fact')
+    for s=2:(n-1)
+        sprintf("s = %d", s)
+        suboutput = [n, s];
+        [fval,x,info] = MESPEX1.Knitro_DDFact(s/n*ones(n,1),s,ones(n,1));
+        % no-scaling
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info1.fix0num, info2.fix0num, info3.fix0num,...
+            info.fix1num, info1.fix1num, info2.fix1num, info3.fix1num,...
+            info.fixnum, info1.fixnum, info2.fixnum, info3.fixnum];
+        % g-scaling
+        [optGamma,info]= MESPEX1.BFGS_DDFact_Gamma(s, ones(n,1), 300);
+        [fval,x,info] = MESPEX1.Knitro_DDFact(s/n*ones(n,1),s,optGamma);
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info1.fix0num, info2.fix0num, info3.fix0num,...
+            info.fix1num, info1.fix1num, info2.fix1num, info3.fix1num,...
+            info.fixnum, info1.fixnum, info2.fixnum, info3.fixnum];
+        exceloutput(end+1,:) = suboutput;
+    end
+    title=["n", "s",...
+        'no-scale solve', ...
+        'no-scale CG 0', 'no-scale maxfix 0', 'no-scale maxfixlin 0', 'no-scale singlefix 0',...
+        'no-scale CG 1', 'no-scale maxfix 1', 'no-scale maxfixlin 1', 'no-scale singlefix 1',...
+        'no-scale CG all', 'no-scale maxfix all', 'no-scale maxfixlin all', 'no-scale singlefix all',...
+        'g-scale solve',...
+        'g-scale CG 0', 'g-scale maxfix 0', 'g-scale maxfixlin 0', 'g-scale singlefix 0',...
+        'g-scale CG 1', 'g-scale maxfix 1', 'g-scale maxfixlin 1', 'g-scale singlefix 1',...
+        'g-scale CG all', 'g-scale maxfix all', 'g-scale maxfixlin all', 'g-scale singlefix all'];
+elseif strcmp(ubname, 'cFact')
+    for s=2:(n-1)
+        sprintf("s = %d", s)
+        suboutput = [n, s];
+        [fval,x,info] = MESPEX1.Knitro_DDFact_comp(s/n*ones(n,1),s,ones(n,1));
+        % no-scaling
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1), LB);
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info1.fix0num, info2.fix0num, info3.fix0num,...
+            info.fix1num, info1.fix1num, info2.fix1num, info3.fix1num,...
+            info.fixnum, info1.fixnum, info2.fixnum, info3.fixnum];
+        % g-scaling
+        [optGamma,info]= MESPEX1.BFGS_DDFact_comp_Gamma(s, ones(n,1), 300);
+        [fval,x,info] = MESPEX1.Knitro_DDFact_comp(s/n*ones(n,1),s,optGamma);
+        if maxfixon == 1
+            [fix0vec, fix1vec, info1] = maxfix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        end
+        [fix0vec, fix1vec, info2] = maxfixlin(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        [fix0vec, fix1vec, info3] = singlefix(ubname, 1:n, C, s, A, b, s/n*ones(n,1), optGamma, LB);
+        suboutput = [suboutput, info.solved, ...
+            info.fix0num, info1.fix0num, info2.fix0num, info3.fix0num,...
+            info.fix1num, info1.fix1num, info2.fix1num, info3.fix1num,...
+            info.fixnum, info1.fixnum, info2.fixnum, info3.fixnum];
+        exceloutput(end+1,:) = suboutput;
+    end
+    title=["n", "s",...
+        'no-scale solve', ...
+        'no-scale CG 0', 'no-scale maxfix 0', 'no-scale maxfixlin 0', 'no-scale singlefix 0',...
+        'no-scale CG 1', 'no-scale maxfix 1', 'no-scale maxfixlin 1', 'no-scale singlefix 1',...
+        'no-scale CG all', 'no-scale maxfix all', 'no-scale maxfixlin all', 'no-scale singlefix all',...
+        'g-scale solve',...
+        'g-scale CG 0', 'g-scale maxfix 0', 'g-scale maxfixlin 0', 'g-scale singlefix 0',...
+        'g-scale CG 1', 'g-scale maxfix 1', 'g-scale maxfixlin 1', 'g-scale singlefix 1',...
+        'g-scale CG all', 'g-scale maxfix all', 'g-scale maxfixlin all', 'g-scale singlefix all'];
+end
+xlswrite(fullFileNameexcel ,title,1,'A1');
+xlswrite(fullFileNameexcel ,exceloutput,1,'A2');
+
+% sprintf('linx o-scaling ===========================')
+% [optgamma,info]= MESPEX1.Newton_Linx_gamma(s, 300);
+% [fix0vec, fix1vec, info1] = maxfix('linx', 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1));
+% info1
+% 
+% [fix0vec, fix1vec, info2] = maxfixlin('linx', 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1));
+% info2
+% 
+% [fix0vec, fix1vec, info3] = singlefix('linx', 1:n, C, s, A, b, s/n*ones(n,1), sqrt(optgamma)*ones(n,1));
+% info3
+
+% sprintf('linx g-scaling ===========================')
+% [optGamma,info]= MESPEX1.BFGS_Linx_Gamma(s, sqrt(optgamma)*ones(n,1), 300);
+% [fix0vec, fix1vec, info] = maxfix('linx', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info
+% [fix0vec, fix1vec, info] = maxfixlin('linx', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info
+% [fix0vec, fix1vec, info] = singlefix('linx', 1:n, C, s, A, b, s/n*ones(n,1),  optGamma);
+% info
+
+
+% sprintf('Fact o-scaling ===========================')
+% [fix0vec, fix1vec, info] = maxfix('Fact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info
+% 
+% [fix0vec, fix1vec, info] = maxfixlin('Fact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info
+% 
+% [fix0vec, fix1vec, info] = singlefix('Fact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info
+% 
+% sprintf('Fact g-scaling ===========================')
+% [optGamma,info]= MESPEX1.BFGS_DDFact_Gamma(s, ones(n,1), 300);
+% [fix0vec, fix1vec, info] = maxfix('Fact', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info
+% [fix0vec, fix1vec, info] = maxfixlin('Fact', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info
+% [fix0vec, fix1vec, info] = singlefix('Fact', 1:n, C, s, A, b, s/n*ones(n,1),  optGamma);
+% info
+
+
+% sprintf('cFact o-scaling ===========================')
+% [fix0vec, fix1vec, info] = maxfix('cFact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info.fix0num
+% info.fix1num
+% 
+% [fix0vec, fix1vec, info] = maxfixlin('cFact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info.fix0num
+% info.fix1num
+% 
+% [fix0vec, fix1vec, info] = singlefix('cFact', 1:n, C, s, A, b, s/n*ones(n,1), ones(n,1));
+% info.fix0num
+% info.fix1num
+% 
+% sprintf('cFact g-scaling ===========================')
+% [optGamma,info]=MESPEX1.BFGS_DDFact_comp_Gamma(s, ones(n,1), 300);
+% [fix0vec, fix1vec, info] = maxfix('cFact', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info.fix0num
+% info.fix1num
+% 
+% [fix0vec, fix1vec, info] = maxfixlin('cFact', 1:n, C, s, A, b, s/n*ones(n,1), optGamma);
+% info.fix0num
+% info.fix1num
+% 
+% [fix0vec, fix1vec, info] = singlefix('cFact', 1:n, C, s, A, b, s/n*ones(n,1),  optGamma);
+% info.fix0num
+% info.fix1num
+
+

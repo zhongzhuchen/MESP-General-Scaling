@@ -30,7 +30,7 @@ for m=[1,5,10,20]
 
             x0=s/n*ones(n,1);
             %% Linx data
-            [optgamma,info]= Prob.BFGS_Linx_gamma(s);
+            [optgamma,info]= Prob.Newton_Linx_gamma(s);
             [~,~,info_Linx_scalar] = Prob.Knitro_Linx(x0,s,sqrt(optgamma)*ones(n,1));
             
             [optGamma,info]= Prob.BFGS_Linx_Gamma(s,sqrt(optgamma)*ones(n,1));

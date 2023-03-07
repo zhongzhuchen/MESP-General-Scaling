@@ -1,0 +1,73 @@
+function [info] = Gurobi_fix(problem, optval)
+% This the a function using gurobi tools to do variable fixing
+f = problem.f;
+A = problem.Aineq;
+b = problem.bineq;
+Aeq = problem.Aeq;
+beq = problem.beq;
+lb = problem.lb;
+ub = problem.ub;
+intcon = problem.intcon;
+% detect binary variables
+binarycon = find((lb==0) & (ub ==1));
+binarycon = intersect(binarycon,intcon);
+% options.IterationLimit = 10000;
+options.Presolve = 0;
+options.Method = 2;
+options.OutputFlag = 0;
+[x,fval,exitflag,output,lambda, result] = linprog(f,A,b,Aeq,beq,lb,ub,[],options);
+
+info = struct;
+
+n = length(f);
+[m1,~] = size(A);
+[m2,~] = size(Aeq);
+
+fix0vec_final = [];
+fix1vec_final = [];
+
+upsilon = lambda.lower;
+nu = lambda.upper;
+pi = lambda.ineqlin;
+tau = lambda.eqlin;
+% check dual feasibility 
+if m1 == 0 && m2 > 0
+    dualresidual_eq = norm(f+Aeq'*tau-upsilon+nu);
+    lowerbound = -tau'*beq-sum(nu);
+elseif m1 > 0 && m2 == 0
+    dualresidual_eq = norm(f+A'*pi-upsilon+nu);
+    lowerbound = -pi'*b-sum(nu);
+elseif m1 == 0 && m2 == 0
+    dualresidual_eq = norm(f-upsilon+nu);
+    lowerbound = -sum(nu);
+else
+     dualresidual_eq = norm(f+A'*pi+Aeq'*tau-upsilon+nu);
+     lowerbound = -pi'*b-tau'*beq-sum(nu);
+end
+if (norm(max(upsilon,0)) < 1e-10*n) &...
+        (norm(min(nu,0)) < 1e-10*n) &...
+        (norm(min(pi,0)) < 1e-10*m1) &...
+        (dualresidual_eq<1e-10*n)
+    info.feasibility = 1;
+    % check variables that can be fixed to 0
+    indicator = lowerbound + upsilon -optval-1e-10 > 0;
+    ind = find(indicator);
+    ind = intersect(binarycon, ind);
+    fix0vec_final = union(fix0vec_final,ind);
+    % check variables that can be fixed to 1
+    indicator = lowerbound + nu -optval-1e-10 > 0;
+    ind = find(indicator);
+    ind = intersect(binarycon, ind);
+    fix1vec_final = union(fix1vec_final,ind);
+end
+
+info.exitflag = exitflag
+info.fix0vec_final = fix0vec_final;
+info.fix1vec_final = fix1vec_final;
+info.fixvec = union(fix0vec_final, fix1vec_final);
+info.x = x;
+info.pi = pi;
+info.tau = tau;
+info.upsilon = upsilon;
+info.nu = nu;
+end

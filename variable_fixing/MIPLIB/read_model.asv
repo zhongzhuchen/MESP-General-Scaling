@@ -1,0 +1,10 @@
+% problem = mpsread('presolved/academictimetablesmall_presolved.mps'); optval = 0;
+% problem = mpsread('mps/academictimetablesmall.mps'); optval = 0;
+% problem = mpsread('mps/bnatt400.mps'); optval = 1;
+% problem = mpsread('presolved/bnatt400_presolved.mps'); optval = 1;
+% problem = mpsread('mps/chromaticindex512-7.mps'); optval = 4;
+% [info] = Knitro_LP_heavy(problem, optval);
+% sprintf("===============================")
+% [Dinfo] = Knitro_DLP_heavy(problem, optval);
+% sprintf("===============================")
+% [Ginfo] = Gurobi_fix(problem, optval);
