@@ -97,6 +97,22 @@ classdef MESP
         Knitro_DDFact_inline;
         end
 
+        function [fval,x,info] = Knitro_DDFact_heavy(obj,x0,s,Gamma)
+        % calling knitro to solve the DDFact problem
+        %{
+        Input:
+        s       - e'x=s
+        x0      - initial point
+        Gamma   - general scaling vector, newC = Diag(Gamma)*C*Diag(Gamma)
+
+        Output:
+        fval    - optimal value
+        x       - optimal solution
+        info    - struct containing necesssary information
+        %}
+        Knitro_DDFact_heavy_inline;
+        end
+
         function [optGamma,info]=BFGS_DDFact_Gamma(obj,s,GammaInit, timelimit)
         % BFGS method for optimizing general scaling vectore
         BFGS_DDFact_Gamma_inline;

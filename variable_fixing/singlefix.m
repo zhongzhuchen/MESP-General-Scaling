@@ -10,12 +10,12 @@ Input:
     C, s, A, b: problem data where C is the covariance matrix, s is the
         cardinality of the subset to choose, A and b are parameters for
         linear constraints
-    x0: inital point
+    x0: initial point
     Gamma: general scaling parameter
     LB: lower bound for the MESP instance
     xhat: the given fixed xhat, which will give a corresponding Theta, note
         that xhat does not have to be optimal for the primal problem
-
+    
 Output:
     fix0vec: the collection of indices that can be fixed to 0
     fix1vec: the collection of indices that can be fixed to 1
@@ -33,7 +33,7 @@ if ~exist('LB', 'var')
     MESPEX1 = MESP(C, A, b);
     LB = MESPEX1.obtain_lb(s);
 end
-% if Theta is not given, construct a Theta by an optimal solution to the
+% if xhat is not given, construct Theta by an optimal solution to the
 % primal problem
 if ~exist('xhat', 'var')
     if strcmp(ubname, 'linx')
@@ -87,6 +87,9 @@ ub=Inf(2*n+m+1,1);
 options = knitro_options('algorithm',3,...  % active-set/simplex algorithm
                          'outlev',0);       % iteration display
 [xlp, dualgap, exitflag, ~] = knitro_lp (f, [], [], Aeq, beq, lb, ub, [], [], options);
+
+info.dual_upsilon = xlp(1:n);
+info.dual_nu = xlp((n+1):2*n);
 if strcmp(ubname, 'linx')
     dualbound = dualgap+0.5*sum(dx2)-n/2+sum(x.*log(Gamma))+fval;
 elseif strcmp(ubname, 'Fact')
@@ -94,11 +97,14 @@ elseif strcmp(ubname, 'Fact')
 elseif strcmp(ubname, 'cFact')
     dualbound = dualgap-(n-s)-sum(dx)+sum((ones(n,1)-x).*log(Gamma))+fval;
 end
+info.integrality_gap= dualbound-LB;
+
 % record total time used
 % Todo: improving the way for obtaining a better single dual feasible
 % solution for variable fixing
 TStart=tic;
 tStart=cputime;
+
 for ind=testind
     % check if x_ind can be fixed to 0
     if dualbound - xlp(ind) <= LB -1e-10
@@ -109,13 +115,16 @@ for ind=testind
         fix1vec(end+1) = ind;
     end
 end
+
+info.fix0num = length(fix0vec);
+info.fix1num = length(fix1vec);
+info.fixto0list = fix0vec;
+info.fixto1list = fix1vec;
+
+
 time=toc(TStart);
 tEnd=cputime-tStart;
 
-info.fixto0list = fix0vec;
-info.fixto1list = fix1vec;
-info.fix0num = length(fix0vec);
-info.fix1num = length(fix1vec);
 info.fixnum = length(fix0vec)+length(fix1vec);
 info.time = time;
 info.cputime = tEnd;

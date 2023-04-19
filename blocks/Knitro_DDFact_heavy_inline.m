@@ -1,19 +1,22 @@
 %% obtain problem data
 C=obj.C;
-n=obj.size;
+n = obj.size;
 A_data=obj.A;
 b_data=obj.b;
 [m,~] = size(obj.A);
-info = struct;
+F=obj.F;
+Fsquare=obj.Fsquare;
+LB = obj.obtain_lb(s);
+info=struct;
 
-%% calling knitro
-[knitro_fval,x,ininfo] = Knitro_Linx_light(x0,C,s,A_data,b_data,Gamma);
+%% calling knitro to solve the DDFact relaxation problem
+[knitro_fval,x,ininfo] = Knitro_DDFact_heavy(x0,C,s,F,Fsquare,A_data,b_data,Gamma, LB); 
 
 %% assign values to info
 % record important information
 info.exitflag=ininfo.exitflag;
 info.x=x; % optimal solution
-[fval,dx,finalinfo] = obj.Linx_obj(x,s,Gamma);
+[fval,dx,finalinfo] = obj.DDFact_obj(x,s,Gamma);
 info.dx=dx;
 info.knitro_fval = knitro_fval;
 info.fval=fval;
@@ -29,6 +32,7 @@ info.lb_lambda=ininfo.lambda.lower;
 info.time=ininfo.time;
 info.cputime=ininfo.cputime;
 info.iterations=ininfo.output.iterations;
+info.boundaryratio = ininfo.boundarycount/info.iterations;
 info.funcCount=ininfo.output.funcCount;
 info.firstorderopt=ininfo.output.firstorderopt;
 info.constrviolation=ininfo.output.constrviolation;
@@ -44,7 +48,6 @@ info.fixto1list=[];
 % if the integrality gap between the upper bound and the lower bound is
 % large, the fixing power might be hidden due the weak lower bound
 info.integrality_gap=info.dualbound-obj.obtain_lb(s);
-
 if info.integrality_gap>1e-6
     info.solved=0;
 else
@@ -61,11 +64,6 @@ for i=1:n
         info.fixto1list(end+1)=i;
     end
 end
-
-% info.fixto0array = zeros(n,1);
-% info.fixto0array(info.fixto0list) = 1;
-% info.fixto1array = zeros(n,1);
-% info.fixto1array(info.fixto1list) = 1;
 
 % implement conflict matrices here (not the most efficient way):
 %{
@@ -127,6 +125,9 @@ info.fix0num = length(fixto0list);
 info.fixto0list = fixto0list;
 
 info.fixnum = info.fix0num + info.fix1num;
+
+
+
 
 
 
