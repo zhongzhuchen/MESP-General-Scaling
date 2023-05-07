@@ -10,7 +10,7 @@ LB = obj.obtain_lb(s);
 info=struct;
 
 %% calling knitro to solve the DDFact relaxation problem
-[knitro_fval,x,ininfo] = Knitro_DDFact_heavy(x0,C,s,F,Fsquare,A_data,b_data,Gamma, LB); 
+[knitro_fval,x,ininfo] = Knitro_DDFact_heavy(x0,C,s,F,Fsquare,A_data,b_data,Gamma, LB, param); 
 
 %% assign values to info
 % record important information
@@ -32,7 +32,8 @@ info.lb_lambda=ininfo.lambda.lower;
 info.time=ininfo.time;
 info.cputime=ininfo.cputime;
 info.iterations=ininfo.output.iterations;
-info.boundaryratio = ininfo.boundarycount/info.iterations;
+info.boundaryratio1 = ininfo.boundarycount1/info.iterations;
+info.boundaryratio2 = ininfo.boundarycount2/info.iterations;
 info.funcCount=ininfo.output.funcCount;
 info.firstorderopt=ininfo.output.firstorderopt;
 info.constrviolation=ininfo.output.constrviolation;

@@ -20,11 +20,19 @@ d=rank(C);
 [U,D]=eig(C);
 s=diag(D);
 [s,I] = sort(s, 'descend');
+
+% %% force eigenvalues corresponding to position > d = rank(C) to be zero
+% s(d+1:end) = 0;
+
 U = U(:, I);
 F=diag(sqrt(s))*U';
-F=F(1:d,1:n);
-F=F';
-Fsquare=zeros(d,d,n);
+
+thresh = 0;
+if d + thresh <= n
+    F=F(1:(d+thresh),1:n);
+    F=F';
+    Fsquare=zeros(d+thresh,d+thresh,n);
+end
 
 for i=1:n
     Fsquare(:,:,i)=F(i,:)'*F(i,:);

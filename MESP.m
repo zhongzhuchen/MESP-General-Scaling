@@ -97,7 +97,7 @@ classdef MESP
         Knitro_DDFact_inline;
         end
 
-        function [fval,x,info] = Knitro_DDFact_heavy(obj,x0,s,Gamma)
+        function [fval,x,info] = Knitro_DDFact_heavy(obj,x0,s,Gamma, param)
         % calling knitro to solve the DDFact problem
         %{
         Input:
