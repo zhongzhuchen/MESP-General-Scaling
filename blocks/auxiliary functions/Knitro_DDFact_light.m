@@ -6,7 +6,13 @@ b_data=b;
 info=struct;
 
 %% calling knitro
-obj_fn =  @(x) DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
+F=diag(sqrt(Gamma))*F;
+for i=1:n
+    Fsquare(:,:,i)=Gamma(i)*Fsquare(:,:,i);
+end
+logGamma = log(Gamma);
+obj_fn =  @(x) DDFact_obj_Knitro_prescale(x,s,F,Fsquare,logGamma);
+
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);

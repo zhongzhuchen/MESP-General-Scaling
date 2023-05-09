@@ -5,7 +5,12 @@ b_data=b;
 info=struct;
 n =length(x0);
 %% calling knitro
-obj_fn =  @(x) DDFact_comp_obj_Knitro(x,s,F_comp,Fsquare_comp,ldetC,Gamma);
+F_comp=diag(sqrt(Gamma))*F_comp;
+for i=1:n
+    Fsquare_comp(:,:,i)=Gamma(i)*Fsquare_comp(:,:,i);
+end
+logGamma = log(Gamma);
+obj_fn =  @(x) DDFact_comp_obj_Knitro_prescale(x,s,F_comp,Fsquare_comp,ldetC,logGamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);

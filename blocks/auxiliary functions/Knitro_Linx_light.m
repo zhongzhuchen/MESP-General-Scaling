@@ -7,7 +7,8 @@ scaleC=diag(Gamma)*C;
 n = length(x0);
 info = struct;
 %% calling knitro
-obj_fn =  @(x) Linx_obj_Knitro(x,C,Gamma);
+logGamma = log(Gamma);
+obj_fn =  @(x) Linx_obj_Knitro_prescale(x,scaleC,logGamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);

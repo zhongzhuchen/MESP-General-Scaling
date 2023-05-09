@@ -3,7 +3,11 @@ function [fval,x,info]=Knitro_DDFact_heavy(x0,C,s,F,Fsquare,A,b,Gamma, LB, param
 A_data=A;
 b_data=b;
 [m,~] = size(A);
-scaleC=diag(Gamma)*C;
+F=diag(sqrt(Gamma))*F;
+for i=1:n
+    Fsquare(:,:,i)=Gamma(i)*Fsquare(:,:,i);
+end
+logGamma = log(Gamma);
 n = length(x0);
 d=length(Fsquare(:,:,1));
 info = struct;
@@ -69,7 +73,7 @@ fixto1list = [];
         terminate = false;
     end
 %% calling knitro
-obj_fn =  @(x) DDFact_obj_Knitro(x,s,F,Fsquare,Gamma);
+obj_fn =  @(x) DDFact_obj_Knitro_prescale(x,s,F,Fsquare,Gamma);
 lb=zeros(n,1);
 ub=ones(n,1);
 Aeq=ones(1,n);
