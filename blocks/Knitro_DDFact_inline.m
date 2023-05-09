@@ -9,7 +9,7 @@ Fsquare=obj.Fsquare;
 info=struct;
 
 %% calling knitro to solve the DDFact relaxation problem
-[knitro_fval,x,ininfo] = Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma); 
+[knitro_fval,x,ininfo] = Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma, param); 
 
 %% assign values to info
 % record important information
