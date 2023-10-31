@@ -28,9 +28,10 @@ k=1;
 c1=1e-4;
 c2=0.9;
 % timelimit = 350;
+param.algorithm = 3;
 
 %% calculate the gradient of fact bound with respect to Gamma
-[bound,x,~]=Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma);
+[bound,x,~]=Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,Gamma,param);
 
 Fx=diag(sqrt(x))*F;
 Fsquarex=Fsquare.*reshape(x,1,1,n);
@@ -88,7 +89,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)
     %check if alfa=1 satisfies the Strong Wolfe Conditions
     alfa=1;
     nGamma=Gamma.*exp(alfa*dir);
-    [nbound,nx,~]=Knitro_DDFact_light(nx,C,s,F,Fsquare,A_data,b_data,nGamma);
+    [nbound,nx,~]=Knitro_DDFact_light(nx,C,s,F,Fsquare,A_data,b_data,nGamma,param);
     nFx=diag(sqrt(nx))*F;
     nFsquarex=Fsquare.*reshape(nx,1,1,n);
     [~,dnGamma,~] = DDFact_obj_auxiliary(nGamma,s,nFx,nFsquarex);
@@ -111,7 +112,7 @@ while(k<=Numiterations && gap > TOL && abs(res) > TOL && difgap > TOL && toc(t1)
     while judge==0
         alfa=(a+b)/2;
         nGamma=Gamma.*exp(alfa*dir);
-        [nbound,nx,~]=Knitro_DDFact_light(nx,C,s,F,Fsquare,A_data,b_data,nGamma);
+        [nbound,nx,~]=Knitro_DDFact_light(nx,C,s,F,Fsquare,A_data,b_data,nGamma,param);
         nFx=diag(sqrt(nx))*F;
         nFsquarex=Fsquare.*reshape(nx,1,1,n);
         [~,dnGamma,~] = DDFact_obj_auxiliary(nGamma,s,nFx,nFsquarex);
@@ -166,7 +167,7 @@ info.absres=abs(res);
 info.difgap=difgap;
 [optbound,optiteration]=min(allbound);
 optGamma=allGamma(:,optiteration);
-[bound1,~,~]=Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,ones(n,1));
+[bound1,~,~]=Knitro_DDFact_light(x0,C,s,F,Fsquare,A_data,b_data,ones(n,1),param);
 if optbound>bound1
     optbound=bound1;
     optGamma=ones(n,1);
